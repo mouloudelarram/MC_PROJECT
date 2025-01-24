@@ -1,5 +1,6 @@
 package fr.univ.gallileeats.controleur;
 
+import java.util.Scanner;
 import fr.univ.gallileeats.interfaces.*;
 import fr.univ.gallileeats.model.*;
 import java.util.HashMap;
@@ -9,6 +10,7 @@ import java.util.function.Consumer;
 public abstract class AbstractControleur implements IControleur {
     protected IVue vue;
     protected Map<String, Consumer<String[]>> actionHandlers;
+    protected final Scanner scanner = new Scanner(System.in);
 
     public AbstractControleur() {
         this.actionHandlers = new HashMap<>();
@@ -86,5 +88,10 @@ public abstract class AbstractControleur implements IControleur {
         if (!utilisateur.getRole().equals(role)) {
             throw new IllegalStateException("Rôle utilisateur invalide");
         }
+    }
+
+    protected void attendreTouche() {
+        System.out.print("\nAppuyez sur Entrée pour continuer...");
+        scanner.nextLine();
     }
 }

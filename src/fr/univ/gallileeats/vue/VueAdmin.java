@@ -22,6 +22,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
             "Supprimer un plat",
             "Gérer les catégories",
             "Gérer les menus buffet",
+            "Voir tous les plats",
             "Retour"
     };
 
@@ -65,10 +66,10 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     private void afficherEntete() {
-        System.out.println("╔══════════════════════════════════════╗");
-        System.out.println("║        Administration GALILEE EATS    ║");
+        System.out.println("╔════════════════════════════════════════════╗");
+        System.out.println("║        Administration GALILEE EATS         ║");
         System.out.printf("║  Connecté en tant que : %s    ║%n", admin.getNom());
-        System.out.println("╚══════════════════════════════════════╝\n");
+        System.out.println("╚════════════════════════════════════════════╝\n");
         afficherSeparateur();
     }
 
@@ -85,6 +86,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
 
     @Override
     public void afficherGestionMenu() {
+        effacerEcran();
         System.out.println("\n=== Gestion du Menu ===");
         for (int i = 0; i < OPTIONS_MENU_GESTION.length; i++) {
             System.out.printf("%d. %s%n", (i + 1), OPTIONS_MENU_GESTION[i]);
@@ -96,6 +98,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
 
     @Override
     public void afficherGestionUtilisateurs() {
+        effacerEcran();
         System.out.println("\n=== Gestion des Utilisateurs ===");
         for (int i = 0; i < OPTIONS_UTILISATEURS.length; i++) {
             System.out.printf("%d. %s%n", (i + 1), OPTIONS_UTILISATEURS[i]);
@@ -107,6 +110,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
 
     @Override
     public void afficherFormulaireAjoutPlat() {
+        effacerEcran();
         System.out.println("\n=== Ajouter un nouveau plat ===");
 
         String nom = lireEntree("Nom du plat");
@@ -135,6 +139,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     public void afficherFormulaireModificationPlat(MenuComponent plat) {
+        effacerEcran();
         System.out.println("\n=== Modifier un plat ===");
         System.out.println("Plat actuel : " + plat.getNom());
         System.out.println("1. Modifier le prix");
@@ -161,6 +166,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     public void afficherFormulaireGestionCategories() {
+        effacerEcran();
         System.out.println("\n=== Gestion des Catégories ===");
         System.out.println("1. Ajouter une catégorie");
         System.out.println("2. Supprimer une catégorie");
@@ -169,6 +175,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     public void afficherFormulaireGestionBuffet() {
+        effacerEcran();
         System.out.println("\n=== Gestion des Menus Buffet ===");
         System.out.println("1. Créer un nouveau menu buffet");
         System.out.println("2. Modifier un menu buffet");
@@ -177,6 +184,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     public void afficherFormulaireAjoutUtilisateur() {
+        effacerEcran();
         System.out.println("\n=== Ajouter un Utilisateur ===");
         System.out.println("1. Client");
         System.out.println("2. Livreur");
@@ -185,6 +193,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     public void afficherListeUtilisateurs(String type, List<Utilisateur> utilisateurs) {
+        effacerEcran();
         if (utilisateurs.isEmpty()) {
             afficherInfo("Aucun " + type.toLowerCase() + " enregistré.");
             return;
@@ -197,6 +206,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     private void afficherUtilisateur(Utilisateur user) {
+        effacerEcran();
         System.out.println("\n🆔 ID: " + user.getId());
         System.out.println("👤 Nom: " + user.getNom());
         System.out.println("📧 Email: " + user.getEmail());
@@ -214,6 +224,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     private void afficherDetailsClient(Client client) {
+        effacerEcran();
         System.out.println("🎓 Type: " + (client.estEtudiant() ? "Étudiant" : "Standard"));
         System.out.println("📍 Adresse: " + client.getAdresseLivraison());
         System.out.printf("💰 Total dépensé: %.2f€%n", client.getTotalDepense());
@@ -221,6 +232,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     private void afficherDetailsLivreur(Livreur livreur) {
+        effacerEcran();
         System.out.println("🚩 Zone: " + livreur.getZone());
         System.out.println("🚗 Véhicule: " + livreur.getVehicule());
         System.out.println("⭐ Note moyenne: " + livreur.getNoteMoyenne());
@@ -228,12 +240,14 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     private void afficherDetailsResponsable(ResponsableCampus resp) {
+        effacerEcran();
         System.out.println("🏢 Département: " + resp.getDepartement());
         System.out.printf("💰 Budget total: %.2f€%n", resp.getBudgetInitial());
         System.out.printf("💵 Budget disponible: %.2f€%n", resp.getBudgetDisponible());
     }
 
     public void afficherGestionCommandes() {
+        effacerEcran();
         System.out.println("\n=== Gestion des Commandes ===");
         for (int i = 0; i < OPTIONS_COMMANDES.length; i++) {
             System.out.printf("%d. %s%n", (i + 1), OPTIONS_COMMANDES[i]);
@@ -241,6 +255,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     public void afficherStatistiquesGlobales() {
+        effacerEcran();
         System.out.println("\n=== Statistiques Globales ===");
         // À compléter avec les statistiques réelles
         System.out.println("\n1. Statistiques des utilisateurs");

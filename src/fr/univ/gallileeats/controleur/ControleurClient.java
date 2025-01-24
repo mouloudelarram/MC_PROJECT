@@ -37,6 +37,9 @@ public class ControleurClient extends AbstractControleur {
         actionHandlers.put("PROFIL_1", params -> modifierInformationsPersonnelles());
         actionHandlers.put("PROFIL_2", params -> gererPreferences());
         actionHandlers.put("PROFIL_3", params -> gererAllergies());
+        actionHandlers.put("PROFIL_4", params -> rechargerSoldeIzly());
+
+
     }
 
     @Override
@@ -310,11 +313,6 @@ public class ControleurClient extends AbstractControleur {
         }
     }
 
-    private void attendreTouche() {
-        System.out.print("\nAppuyez sur Entrée pour continuer...");
-        scanner.nextLine();
-    }
-
     private boolean confirmerAction(String message) {
         System.out.print(message + " (oui/non) : ");
         return scanner.nextLine().trim().equalsIgnoreCase("oui");
@@ -326,10 +324,11 @@ public class ControleurClient extends AbstractControleur {
         System.out.println("1. Modifier informations personnelles");
         System.out.println("2. Gérer préférences alimentaires");
         System.out.println("3. Gérer allergies");
-        System.out.println("4. Retour");
+        System.out.println("4. Recharger le solde IZLY");
+        System.out.println("5. Retour");
 
-        int choix = lireEntier("Votre choix", 1, 4);
-        if (choix < 4) {
+        int choix = lireEntier("Votre choix", 1, 5);
+        if (choix < 5) {
             traiterAction("PROFIL_" + choix);
         } else {
             vue.afficher();
@@ -441,6 +440,24 @@ public class ControleurClient extends AbstractControleur {
                     System.out.println("✅ Allergie supprimée");
                 }
                 break;
+        }
+        attendreTouche();
+        gererProfil();
+    }
+
+    private void rechargerSoldeIzly() {
+        Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
+        System.out.println("\n=== Recharger Solde IZLY ===");
+
+        System.out.print("Montant à recharger : ");
+        double montant = lireDouble("Montant", 0.0);
+
+        try {
+            afficherFormulairePaiement();
+            client.rechargerSoldeIzly(montant);
+            System.out.println("✅ Solde rechargé avec succès");
+        } catch (IllegalArgumentException e) {
+            System.out.println("⚠️ " + e.getMessage());
         }
         attendreTouche();
         gererProfil();
@@ -576,5 +593,10 @@ public class ControleurClient extends AbstractControleur {
         }
 
         attendreTouche();
+    }
+
+    @Override
+    public void retourMenuPrincipal() {
+        controleurPrincipal.afficherVuePrincipale();
     }
 }

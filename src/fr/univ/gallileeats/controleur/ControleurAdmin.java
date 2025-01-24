@@ -1,5 +1,6 @@
 package fr.univ.gallileeats.controleur;
 
+import fr.univ.gallileeats.GalileeEats;
 import fr.univ.gallileeats.model.*;
 import fr.univ.gallileeats.vue.*;
 import java.util.*;
@@ -33,6 +34,7 @@ public class ControleurAdmin extends AbstractControleur {
         actionHandlers.put("MENU_3", params -> supprimerPlat());
         actionHandlers.put("MENU_4", params -> gererCategories());
         actionHandlers.put("MENU_5", params -> ((VueAdmin)vue).afficher());
+        actionHandlers.put("MENU_6", params -> afficherTousLesPlats());
 
         // Gestion utilisateurs
         actionHandlers.put("USERS_1", params -> afficherListeUtilisateurs("CLIENT"));
@@ -45,7 +47,8 @@ public class ControleurAdmin extends AbstractControleur {
     @Override
     public void traiterAction(String action) {
         Administrateur admin = (Administrateur) controleurPrincipal.getUtilisateurConnecte("ADMIN");
-        verifierUtilisateurConnecte(admin, "ADMIN");
+        
+        verifierUtilisateurConnecte(admin, "ADMINISTRATEUR");
 
         if (action.startsWith("ADMIN_")) {
             action = action.substring(6);
@@ -67,6 +70,10 @@ public class ControleurAdmin extends AbstractControleur {
 
     @Override
     public void gererCommandes() {
+        // effacer l'écran
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+
         System.out.println("\n=== Gestion des commandes ===");
         System.out.println("1. Commandes en cours");
         System.out.println("2. Historique des commandes");
@@ -255,6 +262,10 @@ public class ControleurAdmin extends AbstractControleur {
     }
 
     private void gererCategories() {
+        // effacer l'écran
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+
         Scanner scanner = new Scanner(System.in);
         System.out.println("\n=== Gestion des catégories ===");
         System.out.println("1. Ajouter une catégorie");
@@ -412,11 +423,15 @@ public class ControleurAdmin extends AbstractControleur {
     }
 
     private void afficherTousLesPlats() {
+        // Affichage des menus disponibles
+        List<Menu> menus = GalileeEats.getMenusDisponibles();
         System.out.println("\nPlats disponibles :");
-        menus.forEach((type, plats) -> {
-            System.out.println("\n" + type + " :");
-            plats.forEach(plat -> System.out.println("- " + plat.getNom() + " (" + plat.getPrix() + "€)"));
-        });
+        for (Menu menu : menus) {
+            menu.afficher();
+        }
+        
+        attendreTouche();
+        vue.afficher();
     }
 
     private MenuComponent trouverPlatParNom(String nom) {

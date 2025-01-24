@@ -48,7 +48,7 @@ public class VueClient extends AbstractVue implements IVueClient {
 
     private void afficherEntete() {
         System.out.println("╔══════════════════════════════════════╗");
-        System.out.printf("║  Menu Client - %s%n", client.getNom());
+        System.out.printf("  Menu Client - %s%n", client.getNom());
         System.out.println("╚══════════════════════════════════════╝\n");
 
         if (client.estEtudiant()) {
