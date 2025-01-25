@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"fr.univ.gallileeats"},{"l":"fr.univ.gallileeats.controleur"},{"l":"fr.univ.gallileeats.interfaces"},{"l":"fr.univ.gallileeats.model"},{"l":"fr.univ.gallileeats.strategie"},{"l":"fr.univ.gallileeats.vue"}];updateSearchResults();

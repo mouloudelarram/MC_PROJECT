@@ -40,6 +40,7 @@ public class ControleurLivreur extends AbstractControleur {
             handler.accept(new String[]{});
         } else {
             System.out.println("Action non reconnue : " + action);
+            attendreTouche();
             vue.afficher();
         }
     }
@@ -58,6 +59,7 @@ public class ControleurLivreur extends AbstractControleur {
     public void afficherStatistiques() {
         Livreur livreur = (Livreur) controleurPrincipal.getUtilisateurConnecte("LIVREUR");
         ((VueLivreur)vue).afficherStatistiques();
+        attendreTouche();
         vue.afficher();
     }
 
@@ -71,6 +73,7 @@ public class ControleurLivreur extends AbstractControleur {
         System.out.println("🌍 Zone: " + livreur.getZone());
         System.out.println("⭐ Note moyenne: " + livreur.getNoteMoyenne());
         System.out.println("📊 Livraisons effectuées: " + livreur.getNombreLivraisonsEffectuees());
+        attendreTouche();
         vue.afficher();
     }
 
@@ -87,6 +90,9 @@ public class ControleurLivreur extends AbstractControleur {
     private void voirCommandesALivrer() {
         Livreur livreur = (Livreur) controleurPrincipal.getUtilisateurConnecte("LIVREUR");
         ((VueLivreur)vue).afficherCommandesALivrer();
+
+        attendreTouche();
+        vue.afficher();
     }
 
     private void marquerCommandeLivree() {
@@ -95,6 +101,8 @@ public class ControleurLivreur extends AbstractControleur {
 
         if (commandes.isEmpty()) {
             System.out.println("\nAucune commande à livrer.");
+
+            attendreTouche();
             vue.afficher();
             return;
         }
@@ -104,6 +112,7 @@ public class ControleurLivreur extends AbstractControleur {
         try {
             int choix = Integer.parseInt(scanner.nextLine());
             if (choix == 0) {
+                attendreTouche();
                 vue.afficher();
                 return;
             }
@@ -133,6 +142,7 @@ public class ControleurLivreur extends AbstractControleur {
             System.out.println("\nErreur : " + e.getMessage());
         }
 
+        attendreTouche();
         vue.afficher();
     }
 
@@ -153,6 +163,7 @@ public class ControleurLivreur extends AbstractControleur {
                 System.out.println("----------------------------------------");
             });
         }
+        attendreTouche();
         vue.afficher();
     }
 
@@ -194,6 +205,7 @@ public class ControleurLivreur extends AbstractControleur {
             System.out.println("\nErreur : " + e.getMessage());
         }
 
+        attendreTouche();
         vue.afficher();
     }
 }

@@ -30,12 +30,12 @@ public class ControleurResponsable extends AbstractControleur {
         verifierUtilisateurConnecte(responsable, "RESPONSABLE");
 
         if (action.startsWith("RESPONSABLE_")) {
-            action = action.substring(11);
+            action = action.substring(12);
         }
 
         if (action.startsWith("COMMANDE_")) {
             traiterCommandeEvenement(action.substring(9).split("_"));
-            return;
+            // return;
         }
 
         if (action.startsWith("BUDGET_")) {
@@ -48,6 +48,7 @@ public class ControleurResponsable extends AbstractControleur {
             handler.accept(new String[]{});
         } else {
             System.out.println("Action non reconnue : " + action);
+            attendreTouche();
             vue.afficher();
         }
     }
@@ -56,6 +57,8 @@ public class ControleurResponsable extends AbstractControleur {
     public void gererCommandes() {
         ResponsableCampus responsable = (ResponsableCampus) controleurPrincipal.getUtilisateurConnecte("RESPONSABLE");
         ((VueResponsableCampus)vue).afficherCommandesGroupees();
+        attendreTouche();
+        vue.afficher();
     }
 
     @Override
@@ -69,6 +72,7 @@ public class ControleurResponsable extends AbstractControleur {
                 responsable.getPourcentageBudgetUtilise());
         System.out.printf("💵 Budget restant: %.2f€%n", responsable.getBudgetDisponible());
         afficherStatistiquesEvenements();
+        attendreTouche();        
         vue.afficher();
     }
 
@@ -80,6 +84,7 @@ public class ControleurResponsable extends AbstractControleur {
         System.out.println("📧 Email: " + responsable.getEmail());
         System.out.println("🏢 Département: " + responsable.getDepartement());
         System.out.printf("💰 Budget géré: %.2f€%n", responsable.getBudgetInitial());
+        attendreTouche();
         vue.afficher();
     }
 
@@ -96,6 +101,8 @@ public class ControleurResponsable extends AbstractControleur {
     private void creerCommandeEvenement() {
         ResponsableCampus responsable = (ResponsableCampus) controleurPrincipal.getUtilisateurConnecte("RESPONSABLE");
         ((VueResponsableCampus)vue).afficherFormulaireCommandeEvenement();
+        attendreTouche();
+        vue.afficher();
     }
 
     private void traiterCommandeEvenement(String[] params) {
@@ -113,8 +120,10 @@ public class ControleurResponsable extends AbstractControleur {
             if (coutTotal > responsable.getBudgetDisponible()) {
                 System.out.printf("⚠️ Budget insuffisant (Requis: %.2f€, Disponible: %.2f€)%n",
                         coutTotal, responsable.getBudgetDisponible());
+        
+                attendreTouche();
                 vue.afficher();
-                return;
+                //return;
             }
 
             responsable.creerCommandeGroupee(menuBuffet, nombrePersonnes, evenement);
@@ -127,6 +136,7 @@ public class ControleurResponsable extends AbstractControleur {
             System.out.println("⚠️ Erreur: " + e.getMessage());
         }
 
+        attendreTouche();
         vue.afficher();
     }
 
@@ -185,6 +195,7 @@ public class ControleurResponsable extends AbstractControleur {
             System.out.println("\n=== Historique des commandes ===");
             commandes.forEach(this::afficherDetailsCommande);
         }
+        attendreTouche();
         vue.afficher();
     }
 

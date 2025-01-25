@@ -16,6 +16,15 @@ public class ControleurAdmin extends AbstractControleur {
         this.controleurPrincipal = controleurPrincipal;
         this.menus = new HashMap<>();
         this.utilisateurs = new HashMap<>();
+        List<Utilisateur> listeCList = new ArrayList<>();
+        listeCList.add(controleurPrincipal.getUtilisateurConnecte("CLIENT"));
+        utilisateurs.put("CLIENT", listeCList);
+        List<Utilisateur> listeLivreur = new ArrayList<>();
+        listeLivreur.add(controleurPrincipal.getUtilisateurConnecte("LIVREUR"));
+        utilisateurs.put("LIVREUR", listeLivreur);
+        List<Utilisateur> listeResponsableCampus = new ArrayList<>();
+        listeResponsableCampus.add(controleurPrincipal.getUtilisateurConnecte("RESPONSABLE"));
+        utilisateurs.put("RESPONSABLE", listeResponsableCampus);
         initialiserDonnees();
     }
 
@@ -33,7 +42,7 @@ public class ControleurAdmin extends AbstractControleur {
         actionHandlers.put("MENU_2", params -> modifierPlat());
         actionHandlers.put("MENU_3", params -> supprimerPlat());
         actionHandlers.put("MENU_4", params -> gererCategories());
-        actionHandlers.put("MENU_5", params -> ((VueAdmin)vue).afficher());
+        actionHandlers.put("MENU_5", params -> gererMenuBuffet());
         actionHandlers.put("MENU_6", params -> afficherTousLesPlats());
 
         // Gestion utilisateurs
@@ -41,7 +50,7 @@ public class ControleurAdmin extends AbstractControleur {
         actionHandlers.put("USERS_2", params -> afficherListeUtilisateurs("LIVREUR"));
         actionHandlers.put("USERS_3", params -> afficherListeUtilisateurs("RESPONSABLE"));
         actionHandlers.put("USERS_4", params -> ajouterUtilisateur());
-        actionHandlers.put("USERS_5", params -> ((VueAdmin)vue).afficher());
+        actionHandlers.put("USERS_5", params -> gererDroitsDacces());
     }
 
     @Override
@@ -80,6 +89,7 @@ public class ControleurAdmin extends AbstractControleur {
         System.out.println("3. Commandes annulées");
         System.out.println("4. Retour");
 
+        System.out.print("Votre choix : ");
         Scanner scanner = new Scanner(System.in);
         String choix = scanner.nextLine();
         switch (choix) {
@@ -106,6 +116,7 @@ public class ControleurAdmin extends AbstractControleur {
                 System.out.println("- " + type + " : " + liste.size() + " plats")
         );
 
+        attendreTouche();
         vue.afficher();
     }
 
@@ -301,6 +312,9 @@ public class ControleurAdmin extends AbstractControleur {
     private void afficherListeUtilisateurs(String type) {
         List<Utilisateur> liste = utilisateurs.get(type);
         ((VueAdmin)vue).afficherListeUtilisateurs(type, liste);
+
+        attendreTouche();
+        vue.afficher();
     }
 
     private void ajouterUtilisateur() {
@@ -311,6 +325,7 @@ public class ControleurAdmin extends AbstractControleur {
         System.out.println("3. Responsable Campus");
 
         try {
+            System.out.print("Votre choix : ");
             String type = scanner.nextLine();
             System.out.print("Nom : ");
             String nom = scanner.nextLine();
@@ -353,22 +368,78 @@ public class ControleurAdmin extends AbstractControleur {
                     e.getMessage());
         }
 
+        attendreTouche();
         ((VueAdmin)vue).afficherGestionUtilisateurs();
     }
 
+    private void gererDroitsDacces() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("\n=== Gestion des droits d'accès ===");
+        System.out.println("1. Activer le statut étudiant");
+        System.out.println("2. Désactiver le statut étudiant");
+        System.out.println("3. Retour");
+
+        System.out.print("Votre choix : ");
+        String choix = scanner.nextLine();
+        switch(choix) {
+            case "1":
+                System.out.print("Email de l'utilisateur : ");
+                String email = scanner.nextLine();
+                Client client = (Client) utilisateurs.get("CLIENT").stream()
+                        .filter(c -> c.getEmail().equals(email))
+                        .findFirst()
+                        .orElse(null);
+                if (client != null) {
+                    System.out.print("Numéro étudiant : ");
+                    String numEtudiant = scanner.nextLine();
+                    client.activerStatutEtudiant(numEtudiant);
+                    System.out.println("✅ Statut étudiant activé !");
+                } else {
+                    System.out.println("⚠️ Utilisateur non trouvé");
+                }
+                break;
+            case "2":
+                System.out.print("Email de l'utilisateur : ");
+                email = scanner.nextLine();
+                client = (Client) utilisateurs.get("CLIENT").stream()
+                        .filter(c -> c.getEmail().equals(email))
+                        .findFirst()
+                        .orElse(null);
+                if (client != null) {
+                    client.desactiverStatutEtudiant();
+                    System.out.println("✅ Statut étudiant désactivé !");
+                } else {
+                    System.out.println("⚠️ Utilisateur non trouvé");
+                }
+                break;
+            case "3":
+                ((VueAdmin)vue).afficherGestionUtilisateurs();
+                break;
+        }
+
+        attendreTouche();
+        vue.afficher();
+    }
+
     private void afficherCommandesEnCours() {
+        System.out.println("\n=== Commandes en cours ===");
         for (List<Utilisateur> userList : utilisateurs.values()) {
             for (Utilisateur user : userList) {
                 if (user instanceof Client) {
                     Client client = (Client) user;
-                    List<Commande> commandesEnCours = client.getCommandesEnCours();
-                    if (!commandesEnCours.isEmpty()) {
-                        System.out.println("\nCommandes en cours pour " + client.getNom() + ":");
-                        commandesEnCours.forEach(this::afficherDetailsCommande);
-                    }
+                    // List<Commande> commandes = client.getCommandes();
+                    // if (!commandes.isEmpty()) {
+                    //     System.out.println("\nCommandes de " + client.getNom() + ":");
+                    //     commandes.stream()
+                               
+                    //             .forEach(this::afficherDetailsCommande);
+                    // }
+                    System.out.println("\nCommandes de " + client.getNom() + ".");
                 }
             }
         }
+
+        attendreTouche();
         vue.afficher();
     }
 
@@ -386,6 +457,8 @@ public class ControleurAdmin extends AbstractControleur {
                 }
             }
         }
+
+        attendreTouche();
         vue.afficher();
     }
 
@@ -401,6 +474,8 @@ public class ControleurAdmin extends AbstractControleur {
                 }
             }
         }
+
+        attendreTouche();
         vue.afficher();
     }
 
@@ -420,6 +495,51 @@ public class ControleurAdmin extends AbstractControleur {
             System.out.println("🚚 Livreur : " + commande.getLivreur().getNom());
         }
         System.out.println("----------------------------------------");
+    }
+
+    private void gererMenuBuffet() {
+        // effacer l'écran
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+
+        System.out.println("\n=== Gestion du menu buffet ===");
+        System.out.println("1. Ajouter un plat au buffet");
+        System.out.println("2. Retirer un plat du buffet");
+        System.out.println("3. Retour");
+
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Votre choix : ");
+        String choix = scanner.nextLine();
+        switch(choix) {
+            case "1":
+                afficherTousLesPlats();
+                System.out.print("\nNom du plat à ajouter au buffet : ");
+                String nomPlat = scanner.nextLine();
+                MenuComponent plat = trouverPlatParNom(nomPlat);
+                if (plat != null) {
+                    menus.get("BUFFET").add(plat);
+                    System.out.println("✅ Plat ajouté au buffet !");
+                } else {
+                    System.out.println("⚠️ Plat non trouvé");
+                }
+                break;
+            case "2": 
+                System.out.println("\nPlats du buffet :");
+                menus.get("BUFFET").forEach(MenuComponent::afficher);
+                System.out.print("\nNom du plat à retirer du buffet : ");
+                nomPlat = scanner.nextLine();
+                if (confirmerAction("Êtes-vous sûr de vouloir retirer ce plat du buffet ?")) {
+                    menus.get("BUFFET").removeIf(p -> p.getNom().equals(nomPlat));
+                    System.out.println("✅ Plat retiré du buffet !");
+                }
+                break;
+            case "3":
+                ((VueAdmin)vue).afficherGestionMenu();
+                break;
+        }
+
+        attendreTouche();
+        vue.afficher();
     }
 
     private void afficherTousLesPlats() {

@@ -72,11 +72,9 @@ public class Client extends Utilisateur implements Observateur {
     public List<Commande> getCommandesEnCours() {
         List<Commande> commandesEnCours = new ArrayList<>();
         for (Commande commande : commandes) {
-            if (!commande.getEtat().equals(EtatCommande.LIVREE) &&
-                    !commande.getEtat().equals(EtatCommande.SERVIE) &&
-                    !commande.getEtat().equals(EtatCommande.ANNULEE)) {
+            
                 commandesEnCours.add(commande);
-            }
+            
         }
         return commandesEnCours;
     }

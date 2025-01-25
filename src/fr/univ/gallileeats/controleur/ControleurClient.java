@@ -202,12 +202,7 @@ public class ControleurClient extends AbstractControleur {
     public void afficherFormulairePaiement() {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
 
-        System.out.println("\n=== Choix du mode de paiement ===");
-        System.out.println("1. Carte bancaire");
-        if (client.estEtudiant()) {
-            System.out.println("2. IZLY");
-        }
-        System.out.println("3. Espèces");
+        ((VueClient)vue).afficherFormulairePaiement();
 
         int choix = lireEntier("Votre choix", 1, 3);
 
@@ -258,6 +253,7 @@ public class ControleurClient extends AbstractControleur {
         StrategyPaiement strategie = new PaiementIzly(client.getNumeroEtudiant(), pin);
         commandeEnCours.setStrategyPaiement(strategie);
         commandeEnCours.payer();
+        client.debiterSoldeIzly(commandeEnCours.getTotal());
     }
 
     private void traiterPaiementEspeces() {
@@ -453,7 +449,7 @@ public class ControleurClient extends AbstractControleur {
         double montant = lireDouble("Montant", 0.0);
 
         try {
-            afficherFormulairePaiement();
+            // afficherFormulairePaiement();
             client.rechargerSoldeIzly(montant);
             System.out.println("✅ Solde rechargé avec succès");
         } catch (IllegalArgumentException e) {
@@ -593,6 +589,7 @@ public class ControleurClient extends AbstractControleur {
         }
 
         attendreTouche();
+        vue.afficher();
     }
 
     @Override

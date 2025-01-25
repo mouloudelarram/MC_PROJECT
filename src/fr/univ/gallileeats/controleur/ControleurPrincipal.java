@@ -4,6 +4,7 @@ import fr.univ.gallileeats.interfaces.IControleur;
 import fr.univ.gallileeats.model.*;
 import fr.univ.gallileeats.vue.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -111,51 +112,20 @@ public class ControleurPrincipal extends AbstractControleur {
 
     // Méthodes de connexion
     private void connecterClient() {
-        // Création d'un client de démonstration
-        Client client = new Client(
-                "CLI1",
-                "Jean Dupont",
-                "jean@galilee.fr",
-                DEMO_PASSWORD,
-                "123 rue de Paris"
-        );
-        client.activerStatutEtudiant("20240001");
-        utilisateursConnectes.put("CLIENT", client);
-
         // Création et affichage de la vue
-        VueClient vueClient = new VueClient(sousControleurs.get("CLIENT"), client);
+        VueClient vueClient = new VueClient(sousControleurs.get("CLIENT"), (Client) utilisateursConnectes.get("CLIENT"));
         sousControleurs.get("CLIENT").setVue(vueClient);
         vueClient.afficher();
     }
 
     private void connecterLivreur() {
-        Livreur livreur = new Livreur(
-                "LIV1",
-                "Pierre Martin",
-                "pierre@galilee.fr",
-                DEMO_PASSWORD,
-                "Vélo",
-                "Zone Nord"
-        );
-        utilisateursConnectes.put("LIVREUR", livreur);
-
-        VueLivreur vueLivreur = new VueLivreur(sousControleurs.get("LIVREUR"), livreur);
+        VueLivreur vueLivreur = new VueLivreur(sousControleurs.get("LIVREUR"), (Livreur) utilisateursConnectes.get("LIVREUR"));
         sousControleurs.get("LIVREUR").setVue(vueLivreur);
         vueLivreur.afficher();
     }
 
     private void connecterResponsable() {
-        ResponsableCampus responsable = new ResponsableCampus(
-                "RES1",
-                "Marie Durand",
-                "marie@galilee.fr",
-                DEMO_PASSWORD,
-                "Informatique",
-                5000.0
-        );
-        utilisateursConnectes.put("RESPONSABLE", responsable);
-
-        VueResponsableCampus vueResponsable = new VueResponsableCampus(sousControleurs.get("RESPONSABLE"), responsable);
+        VueResponsableCampus vueResponsable = new VueResponsableCampus(sousControleurs.get("RESPONSABLE"), (ResponsableCampus) utilisateursConnectes.get("RESPONSABLE"));
         sousControleurs.get("RESPONSABLE").setVue(vueResponsable);
         vueResponsable.afficher();
     }
@@ -183,6 +153,10 @@ public class ControleurPrincipal extends AbstractControleur {
     // Méthodes utilitaires
     public Utilisateur getUtilisateurConnecte(String type) {
         return utilisateursConnectes.get(type);
+    }
+
+    public void setUtilisateurConnecte(String type, Utilisateur utilisateur) {
+        utilisateursConnectes.put(type, utilisateur);
     }
 
     private Utilisateur getUtilisateurConnecteActuel() {

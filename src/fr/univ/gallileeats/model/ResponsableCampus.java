@@ -202,7 +202,7 @@ public class ResponsableCampus extends Utilisateur implements Observateur {
 
     @Override
     public String getRole() {
-        return "RESPONSABLE_CAMPUS";
+        return "RESPONSABLE";
     }
 
     @Override

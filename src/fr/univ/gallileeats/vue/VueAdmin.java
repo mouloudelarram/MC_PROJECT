@@ -193,7 +193,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     public void afficherListeUtilisateurs(String type, List<Utilisateur> utilisateurs) {
-        effacerEcran();
+        //effacerEcran();
         if (utilisateurs.isEmpty()) {
             afficherInfo("Aucun " + type.toLowerCase() + " enregistré.");
             return;
@@ -206,7 +206,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     private void afficherUtilisateur(Utilisateur user) {
-        effacerEcran();
+        // effacerEcran();
         System.out.println("\n🆔 ID: " + user.getId());
         System.out.println("👤 Nom: " + user.getNom());
         System.out.println("📧 Email: " + user.getEmail());
@@ -224,7 +224,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     private void afficherDetailsClient(Client client) {
-        effacerEcran();
+        // effacerEcran();
         System.out.println("🎓 Type: " + (client.estEtudiant() ? "Étudiant" : "Standard"));
         System.out.println("📍 Adresse: " + client.getAdresseLivraison());
         System.out.printf("💰 Total dépensé: %.2f€%n", client.getTotalDepense());
@@ -232,7 +232,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     private void afficherDetailsLivreur(Livreur livreur) {
-        effacerEcran();
+        // effacerEcran();
         System.out.println("🚩 Zone: " + livreur.getZone());
         System.out.println("🚗 Véhicule: " + livreur.getVehicule());
         System.out.println("⭐ Note moyenne: " + livreur.getNoteMoyenne());
@@ -240,7 +240,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
     }
 
     private void afficherDetailsResponsable(ResponsableCampus resp) {
-        effacerEcran();
+        // effacerEcran();
         System.out.println("🏢 Département: " + resp.getDepartement());
         System.out.printf("💰 Budget total: %.2f€%n", resp.getBudgetInitial());
         System.out.printf("💵 Budget disponible: %.2f€%n", resp.getBudgetDisponible());

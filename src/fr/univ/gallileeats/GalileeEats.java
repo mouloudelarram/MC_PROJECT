@@ -86,6 +86,40 @@ public class GalileeEats {
         // Création du contrôleur principal
         controleurPrincipal = new ControleurPrincipal();
 
+                // ajouter des utilisateurs de démonstration
+        // Création d'un client de démonstration
+        Client client = new Client(
+                "CLI1",
+                "Jean Dupont",
+                "jean@galilee.fr",
+                "password123",
+                "123 rue de Paris"
+        );
+        client.activerStatutEtudiant("20240001");
+        controleurPrincipal.setUtilisateurConnecte("CLIENT", client);
+
+        // Création d'un livreur de démonstration
+        Livreur livreur = new Livreur(
+                "LIV1",
+                "Pierre Martin",
+                "pierre@galilee.fr",
+                "password123",
+                "Vélo",
+                "Zone Nord"
+        );
+        controleurPrincipal.setUtilisateurConnecte("LIVREUR", livreur);
+
+        // Création d'un responsable de campus de démonstration
+        ResponsableCampus responsable = new ResponsableCampus(
+                "RES1",
+                "Marie Durand",
+                "marie@galilee.fr",
+                "password123",
+                "Informatique",
+                5000.0
+        );
+        controleurPrincipal.setUtilisateurConnecte("RESPONSABLE", responsable);
+
         // Affichage de la vue principale
         controleurPrincipal.afficherVuePrincipale();
     }
