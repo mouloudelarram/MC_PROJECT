@@ -29,7 +29,7 @@ public class ControleurPrincipal extends AbstractControleur {
         ajouterHandler("MENU_PRINCIPAL_5", params -> quitterApplication());
     }
 
-    private void initialiserSousControleurs() {
+    public void initialiserSousControleurs() {
         sousControleurs.put("CLIENT", new ControleurClient(this));
         sousControleurs.put("LIVREUR", new ControleurLivreur(this));
         sousControleurs.put("ADMIN", new ControleurAdmin(this));

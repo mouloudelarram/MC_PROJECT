@@ -25,7 +25,7 @@ public class ControleurAdmin extends AbstractControleur {
         List<Utilisateur> listeResponsableCampus = new ArrayList<>();
         listeResponsableCampus.add(controleurPrincipal.getUtilisateurConnecte("RESPONSABLE"));
         utilisateurs.put("RESPONSABLE", listeResponsableCampus);
-        initialiserDonnees();
+        //initialiserDonnees();
     }
 
     @Override
@@ -427,14 +427,15 @@ public class ControleurAdmin extends AbstractControleur {
             for (Utilisateur user : userList) {
                 if (user instanceof Client) {
                     Client client = (Client) user;
-                    // List<Commande> commandes = client.getCommandes();
-                    // if (!commandes.isEmpty()) {
-                    //     System.out.println("\nCommandes de " + client.getNom() + ":");
-                    //     commandes.stream()
+                    List<Commande> commandes = client.getCommandes();
+                    if (!commandes.isEmpty()) {
+                        System.out.println("\nCommandes de " + client.getNom() + ":");
+                        commandes.stream()
                                
-                    //             .forEach(this::afficherDetailsCommande);
-                    // }
-                    System.out.println("\nCommandes de " + client.getNom() + ".");
+                                .forEach(this::afficherDetailsCommande);
+                    }
+                    // System.out.println("\nCommandes de " + client.getNom() + ".");
+                    // System.out.println(client.getCommandesEnCours());
                 }
             }
         }
