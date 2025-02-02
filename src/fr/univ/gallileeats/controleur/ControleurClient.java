@@ -95,9 +95,10 @@ public class ControleurClient extends AbstractControleur {
             int choixLivraison = lireEntier("Votre choix", 1, 3);
             Commande.ModeLivraison modeLivraison = Commande.ModeLivraison.values()[choixLivraison - 1];
 
+            // Création unique de la commande
             commandeEnCours = new Commande(client, menuChoisi, 1, modeLivraison);
 
-            // Ajouter les observateurs
+            // Gestion des observateurs (Pattern Observer)
             List<Cuisinier> cuisiniers = controleurPrincipal.getObservateursCuisiniers();
             for (Cuisinier cuisinier : cuisiniers) {
                 commandeEnCours.ajouterObservateur(cuisinier);
@@ -111,6 +112,7 @@ public class ControleurClient extends AbstractControleur {
                     commandeEnCours.setAdresseLivraison(nouvelleAdresse);
                 }
 
+                // Ajout des observateurs livreurs (Pattern Observer)
                 List<Livreur> livreurs = controleurPrincipal.getObservateursLivreurs();
                 for (Livreur livreur : livreurs) {
                     if (livreur.isDisponible()) {
@@ -119,17 +121,21 @@ public class ControleurClient extends AbstractControleur {
                 }
             }
 
+            // Gestion des options supplémentaires (Pattern Decorator)
             ajouterOptionsSupplementaires(menuChoisi);
+
+            // Affichage du récapitulatif
             afficherRecapitulatifCommande();
 
             if (confirmerAction("Confirmer la commande ?")) {
+                // Gestion du paiement (Pattern Strategy)
                 afficherFormulairePaiement();
 
                 if (commandeEnCours.estPayee()) {
-                    // Ajouter l'observateur client
+                    // Ajout de l'observateur client
                     commandeEnCours.ajouterObservateur(client);
 
-                    // Initialiser l'état
+                    // Initialiser l'état (Pattern State)
                     commandeEnCours.changerEtat(EtatCommande.NOUVELLE);
 
                     // Ajouter la commande au client
@@ -139,7 +145,7 @@ public class ControleurClient extends AbstractControleur {
                     System.out.println("Numéro de commande : " + commandeEnCours.getNumeroCommande());
                     System.out.printf("Total : %.2f€%n", commandeEnCours.getTotal());
 
-                    // Passer à la préparation après confirmation
+                    // Passage à la préparation
                     commandeEnCours.changerEtat(EtatCommande.EN_PREPARATION);
                 }
             }
@@ -386,7 +392,7 @@ public class ControleurClient extends AbstractControleur {
             }
         }
 
-        // Calculer et afficher les suppléments (Pattern Décorateur)
+        // Calculer et afficher les suppléments (Pattern Decorator)
         double prixSupplements = 0.0;
         if (menu instanceof PlatDecore) {
             System.out.println("Supplements ajoutés :");
@@ -413,7 +419,7 @@ public class ControleurClient extends AbstractControleur {
         // Calculer le prix total avant réductions
         double totalAvantReductions = prixBase + prixSupplements;
 
-        // Afficher les réductions appliquées (Pattern Strategy)
+        // Afficher les réductions appliquées
         System.out.println("Réductions appliquées :");
         System.out.printf("Prix initial : %.2f€%n", totalAvantReductions);
 
@@ -435,14 +441,8 @@ public class ControleurClient extends AbstractControleur {
 
         System.out.printf("💰 Total final à payer : %.2f€%n", totalFinal);
 
-        // IMPORTANT : Mettre à jour le total de la commande pour le paiement
-        commandeEnCours = new Commande(
-                commandeEnCours.getClient(),
-                menu,  // Utiliser le menu avec les suppléments
-                commandeEnCours.getNombrePersonnes(),
-                commandeEnCours.getModeLivraison()
-        );
-        commandeEnCours.setTotal(totalFinal); // Définir le montant final à payer
+        // Mettre à jour le total de la commande
+        commandeEnCours.setTotal(totalFinal);
     }
 
     private int lireEntier(String message, int min, int max) {
