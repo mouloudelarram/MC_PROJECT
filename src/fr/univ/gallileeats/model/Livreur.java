@@ -103,9 +103,10 @@ public class Livreur extends Utilisateur implements Observateur {
             throw new IllegalArgumentException("Cette commande n'est pas assignée à ce livreur");
         }
         if (commande.getEtat() != EtatCommande.PRETE) {
-            throw new IllegalStateException("La commande doit être prête avant d'être livrée");
+            throw new IllegalStateException("La commande n'est pas prête pour la livraison");
         }
 
+        commande.changerEtat(EtatCommande.EN_LIVRAISON);
         commandesALivrer.remove(commande);
         historiqueLivraisons.add(commande);
         commande.changerEtat(EtatCommande.LIVREE);
@@ -116,6 +117,7 @@ public class Livreur extends Utilisateur implements Observateur {
         updateStatut();
         updateDisponibilite();
     }
+
 
     public void signalerProblemeLivraison(Commande commande, String raison) {
         if (!commandesALivrer.contains(commande)) {

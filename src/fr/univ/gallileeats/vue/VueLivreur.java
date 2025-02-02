@@ -92,10 +92,18 @@ public class VueLivreur extends AbstractVue implements IVueLivreur {
 
     public void afficherFormulaireLivraison() {
         List<Commande> commandes = livreur.getCommandesALivrer();
-        afficherCommandesALivrer();
-        if (!commandes.isEmpty()) {
-            System.out.println("\nEntrez le numéro de la commande à marquer comme livrée (0 pour annuler)");
+        if (commandes.isEmpty()) {
+            System.out.println("Aucune commande à livrer.");
+            return;
         }
+
+        System.out.println("\nCommandes disponibles pour livraison :");
+        for (int i = 0; i < commandes.size(); i++) {
+            System.out.printf("\n%d. Commande #%s%n", (i + 1), commandes.get(i).getNumeroCommande());
+            afficherDetailsCommande(commandes.get(i));
+        }
+
+        System.out.println("\nEntrez le numéro de l'option (1-" + commandes.size() + "), 0 pour annuler :");
     }
 
     public void afficherConfirmationLivraison(Commande commande) {
