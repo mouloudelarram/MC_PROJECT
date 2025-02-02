@@ -219,6 +219,8 @@ public class ControleurClient extends AbstractControleur {
 
     // Mise à jour de la méthode ajouterOptionsSupplementaires pour une meilleure gestion des erreurs
     private void ajouterOptionsSupplementaires(Menu menu) {
+        MenuComponent menuModifie = commandeEnCours.getMenu();
+
         while (confirmerAction("\nVoulez-vous ajouter des options supplémentaires ?")) {
             System.out.println("\nOptions disponibles :");
             System.out.println("1. Ingrédient supplémentaire");
@@ -226,7 +228,6 @@ public class ControleurClient extends AbstractControleur {
             System.out.println("3. Portion supplémentaire");
 
             int choix = lireEntier("Votre choix", 1, 3);
-            MenuComponent menuModifie = commandeEnCours.getMenu();
 
             try {
                 switch (choix) {
@@ -242,12 +243,8 @@ public class ControleurClient extends AbstractControleur {
                 }
 
                 if (menuModifie != commandeEnCours.getMenu()) {
-                    commandeEnCours = new Commande(
-                            commandeEnCours.getClient(),
-                            menuModifie,
-                            commandeEnCours.getNombrePersonnes(),
-                            commandeEnCours.getModeLivraison()
-                    );
+                    // Instead of creating a new Commande, just update the menu
+                    commandeEnCours.setMenu(menuModifie);
                     System.out.println("\n✅ Supplément ajouté avec succès !");
                 }
             } catch (Exception e) {

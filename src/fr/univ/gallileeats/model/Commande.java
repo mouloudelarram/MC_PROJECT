@@ -3,6 +3,7 @@ package fr.univ.gallileeats.model;
 import fr.univ.gallileeats.interfaces.Sujet;
 import fr.univ.gallileeats.interfaces.Observateur;
 import fr.univ.gallileeats.interfaces.StrategyPaiement;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
@@ -212,6 +213,7 @@ public class Commande implements Sujet {
             throw new IllegalStateException("Un livreur doit être assigné");
         }
     }
+
     private void notifierSelonEtat(EtatCommande nouvelEtat) {
         switch (nouvelEtat) {
             case NOUVELLE:
@@ -334,21 +336,67 @@ public class Commande implements Sujet {
     public List<String> getReductionsAppliquees() {
         return new ArrayList<>(reductionsAppliquees);
     }
-    public String getNumeroCommande() { return numeroCommande; }
-    public Utilisateur getClient() { return client; }
-    public MenuComponent getMenu() { return menu; }
-    public EtatCommande getEtat() { return etat; }
-    public double getTotal() { return total; }
-    public Date getDateCommande() { return dateCommande; }
-    public Date getDateLivraison() { return dateLivraison; }
-    public String getAdresseLivraison() { return adresseLivraison; }
-    public ModeLivraison getModeLivraison() { return modeLivraison; }
-    public Livreur getLivreur() { return livreur; }
-    public int getNombrePersonnes() { return nombrePersonnes; }
-    public String getCommentaires() { return commentaires; }
-    public boolean estPayee() { return estPaye; }
-    public String getEvenement() { return evenement; }
-    public List<String> getHistorique() { return new ArrayList<>(historique); }
+
+    public String getNumeroCommande() {
+        return numeroCommande;
+    }
+
+    public Utilisateur getClient() {
+        return client;
+    }
+
+    public MenuComponent getMenu() {
+        return menu;
+    }
+
+    public EtatCommande getEtat() {
+        return etat;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public Date getDateCommande() {
+        return dateCommande;
+    }
+
+    public Date getDateLivraison() {
+        return dateLivraison;
+    }
+
+    public String getAdresseLivraison() {
+        return adresseLivraison;
+    }
+
+    public ModeLivraison getModeLivraison() {
+        return modeLivraison;
+    }
+
+    public Livreur getLivreur() {
+        return livreur;
+    }
+
+    public int getNombrePersonnes() {
+        return nombrePersonnes;
+    }
+
+    public String getCommentaires() {
+        return commentaires;
+    }
+
+    public boolean estPayee() {
+        return estPaye;
+    }
+
+    public String getEvenement() {
+        return evenement;
+    }
+
+    public List<String> getHistorique() {
+        return new ArrayList<>(historique);
+    }
+
     private double getReductionPourcentage() {
         if (this.client instanceof Client && ((Client) this.client).estEtudiant()) {
             return 0.15; // 15% de réduction étudiant
@@ -361,6 +409,7 @@ public class Commande implements Sujet {
         this.total = total;
         this.totalAvantReductions = total / (1 - getReductionPourcentage());
     }
+
     public void setAdresseLivraison(String adresseLivraison) {
         if (modeLivraison == ModeLivraison.LIVRAISON &&
                 (adresseLivraison == null || adresseLivraison.trim().isEmpty())) {
@@ -369,6 +418,11 @@ public class Commande implements Sujet {
         this.adresseLivraison = adresseLivraison;
         ajouterEvenementHistorique("Adresse de livraison modifiée: " + adresseLivraison);
         notifierObservateurs();
+    }
+
+    public void setMenu(MenuComponent menu) {
+        this.menu = menu;
+        calculerTotal(); // Recalculate total with new menu
     }
 
     public void setLivreur(Livreur livreur) {
