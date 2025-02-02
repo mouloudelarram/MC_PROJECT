@@ -1,19 +1,35 @@
 package fr.univ.gallileeats.vue;
 
 import fr.univ.gallileeats.interfaces.*;
+
 import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
 
 /**
  * Classe abstraite de base pour toutes les vues de l'application.
- * Implémente les comportements communs et la gestion des notifications.
+ * Elle implémente les comportements communs et la gestion des notifications.
  */
 public abstract class AbstractVue implements IVue, Observateur {
+    /**
+     * Contrôleur associé à la vue
+     */
     protected IControleur controleur;
+    /**
+     * Scanner pour la saisie utilisateur
+     */
     protected Scanner scanner;
+    /**
+     * Liste des notifications reçues
+     */
     protected List<String> notifications;
 
+    /**
+     * Constructeur de la classe AbstractVue.
+     *
+     * @param controleur Le contrôleur associé à la vue.
+     * @throws IllegalArgumentException si le contrôleur est null.
+     */
     public AbstractVue(IControleur controleur) {
         if (controleur == null) {
             throw new IllegalArgumentException("Le contrôleur ne peut pas être null");
@@ -23,9 +39,17 @@ public abstract class AbstractVue implements IVue, Observateur {
         this.notifications = new ArrayList<>();
     }
 
+    /**
+     * Méthode abstraite pour afficher la vue.
+     */
     @Override
     public abstract void afficher();
 
+    /**
+     * Met à jour la vue lorsqu'une notification est reçue.
+     *
+     * @param source Objet source de la mise à jour.
+     */
     @Override
     public void actualiser(Object source) {
         if (source != null) {
@@ -34,11 +58,25 @@ public abstract class AbstractVue implements IVue, Observateur {
         this.afficher();
     }
 
+    /**
+     * Lit une entrée utilisateur sous forme de chaîne de caractères.
+     *
+     * @param message Message affiché avant la saisie.
+     * @return Entrée utilisateur sans espaces inutiles.
+     */
     protected String lireEntree(String message) {
         System.out.print(message + " : ");
         return scanner.nextLine().trim();
     }
 
+    /**
+     * Lit une entrée utilisateur sous forme de nombre entier dans une plage donnée.
+     *
+     * @param message Message affiché avant la saisie.
+     * @param min     Valeur minimale autorisée.
+     * @param max     Valeur maximale autorisée.
+     * @return Nombre entier validé.
+     */
     protected int lireEntreeNumerique(String message, int min, int max) {
         while (true) {
             try {
@@ -54,6 +92,13 @@ public abstract class AbstractVue implements IVue, Observateur {
         }
     }
 
+    /**
+     * Lit une entrée utilisateur sous forme de nombre décimal supérieur à une valeur minimale.
+     *
+     * @param message Message affiché avant la saisie.
+     * @param min     Valeur minimale autorisée.
+     * @return Nombre décimal validé.
+     */
     protected double lireEntreeDouble(String message, double min) {
         while (true) {
             try {
@@ -69,6 +114,9 @@ public abstract class AbstractVue implements IVue, Observateur {
         }
     }
 
+    /**
+     * Affiche les notifications reçues et les efface après affichage.
+     */
     protected void afficherNotifications() {
         if (!notifications.isEmpty()) {
             System.out.println("\n=== Notifications ===");
@@ -80,22 +128,46 @@ public abstract class AbstractVue implements IVue, Observateur {
         }
     }
 
+    /**
+     * Affiche un séparateur visuel dans la console.
+     */
     protected void afficherSeparateur() {
         System.out.println("\n----------------------------------------");
     }
 
+    /**
+     * Affiche un message d'erreur formaté.
+     *
+     * @param message Message d'erreur.
+     */
     protected void afficherErreur(String message) {
         System.out.println("\n⚠️ ERREUR : " + message);
     }
 
+    /**
+     * Affiche un message de succès formaté.
+     *
+     * @param message Message de succès.
+     */
     protected void afficherSucces(String message) {
         System.out.println("\n✅ " + message);
     }
 
+    /**
+     * Affiche un message d'information formaté.
+     *
+     * @param message Message d'information.
+     */
     protected void afficherInfo(String message) {
         System.out.println("\nℹ️ " + message);
     }
 
+    /**
+     * Demande une confirmation utilisateur sous forme de oui/non.
+     *
+     * @param message Message de confirmation.
+     * @return true si l'utilisateur répond "oui", false sinon.
+     */
     protected boolean confirmerAction(String message) {
         while (true) {
             System.out.print("\n" + message + " (oui/non) : ");
@@ -109,24 +181,19 @@ public abstract class AbstractVue implements IVue, Observateur {
         }
     }
 
-
-
+    /**
+     * Attend que l'utilisateur appuie sur Entrée avant de continuer.
+     */
     protected void attendreTouche() {
         System.out.print("\nAppuyez sur Entrée pour continuer...");
         scanner.nextLine();
     }
 
+    /**
+     * Efface l'écran de la console.
+     */
     protected void effacerEcran() {
         System.out.print("\033[H\033[2J");
         System.out.flush();
     }
-
-    protected void afficherMenuGeneral(String[] options) {
-        System.out.println("\n=== Menu ===");
-        for (int i = 0; i < options.length; i++) {
-            System.out.printf("%d. %s%n", (i + 1), options[i]);
-        }
-        System.out.println("=============");
-    }
-
 }

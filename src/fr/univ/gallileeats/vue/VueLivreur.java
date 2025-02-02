@@ -5,6 +5,9 @@ import fr.univ.gallileeats.interfaces.IVueLivreur;
 import fr.univ.gallileeats.model.*;
 import java.util.List;
 
+/**
+ * Vue dédiée aux livreurs, leur permettant de gerer des commandes à livrer,
+ */
 public class VueLivreur extends AbstractVue implements IVueLivreur {
     private Livreur livreur;
     private static final String[] OPTIONS_MENU = {
@@ -16,6 +19,13 @@ public class VueLivreur extends AbstractVue implements IVueLivreur {
             "Retour au menu principal"
     };
 
+    /**
+     * Constructeur de VueLivreur.
+     * @param controleur Le contrôleur associé à cette vue.
+     * @param livreur L'instance du livreur utilisant la vue.
+     * @throws IllegalArgumentException si le livreur est null.
+     */
+
     public VueLivreur(IControleur controleur, Livreur livreur) {
         super(controleur);
         if (livreur == null) {
@@ -24,6 +34,9 @@ public class VueLivreur extends AbstractVue implements IVueLivreur {
         this.livreur = livreur;
     }
 
+    /**
+     * Affiche la vue du livreur, y compris le menu et les notifications.
+     */
     @Override
     public void afficher() {
         effacerEcran();
@@ -33,6 +46,9 @@ public class VueLivreur extends AbstractVue implements IVueLivreur {
         traiterChoix();
     }
 
+    /**
+     * Affiche les informations du livreur, y compris son statut, zone, et véhicule.
+     */
     private void afficherStatusLivreur() {
         System.out.println("╔══════════════════════════════════════╗");
         System.out.printf("║     Livreur - %s%n", livreur.getNom());
@@ -48,17 +64,26 @@ public class VueLivreur extends AbstractVue implements IVueLivreur {
         afficherSeparateur();
     }
 
+    /**
+     * Affiche le menu principal avec les options disponibles.
+     */
     private void afficherMenu() {
         for (int i = 0; i < OPTIONS_MENU.length; i++) {
             System.out.printf("%d. %s%n", (i + 1), OPTIONS_MENU[i]);
         }
     }
 
+    /**
+     * Gère l'entrée utilisateur pour sélectionner une action dans le menu.
+     */
     private void traiterChoix() {
         int choix = lireEntreeNumerique("\nVotre choix", 1, OPTIONS_MENU.length);
         controleur.traiterAction("LIVREUR_" + choix);
     }
 
+    /**
+     * Affiche la liste des commandes disponibles à livrer.
+     */
     public void afficherCommandesALivrer() {
         List<Commande> commandes = livreur.getCommandesALivrer();
         if (commandes.isEmpty()) {
@@ -73,6 +98,11 @@ public class VueLivreur extends AbstractVue implements IVueLivreur {
         }
     }
 
+
+    /**
+     * Affiche les détails d'une commande spécifique.
+     * @param commande La commande à afficher.
+     */
     private void afficherDetailsCommande(Commande commande) {
         System.out.println("🔖 N° " + commande.getNumeroCommande());
         System.out.println("👤 Client : " + commande.getClient().getNom());
@@ -90,6 +120,10 @@ public class VueLivreur extends AbstractVue implements IVueLivreur {
         afficherSeparateur();
     }
 
+    /**
+     * Affiche le formulaire permettant de sélectionner une commande à livrer.
+     */
+
     public void afficherFormulaireLivraison() {
         List<Commande> commandes = livreur.getCommandesALivrer();
         if (commandes.isEmpty()) {
@@ -106,6 +140,10 @@ public class VueLivreur extends AbstractVue implements IVueLivreur {
         System.out.println("\nEntrez le numéro de l'option (1-" + commandes.size() + "), 0 pour annuler :");
     }
 
+    /**
+     * Affiche la confirmation de livraison d'une commande.
+     * @param commande La commande dont la livraison est à confirmer.
+     */
     public void afficherConfirmationLivraison(Commande commande) {
         System.out.println("\n=== Confirmation de livraison ===");
         afficherDetailsCommande(commande);
@@ -114,6 +152,9 @@ public class VueLivreur extends AbstractVue implements IVueLivreur {
         System.out.println("3. Annuler");
     }
 
+    /**
+     * Affiche les statistiques du livreur, telles que le nombre de livraisons effectuées et la note moyenne.
+     */
     public void afficherStatistiques() {
         System.out.println("\n=== Mes Statistiques ===");
         System.out.println("📊 Nombre total de livraisons : " + livreur.getNombreLivraisonsEffectuees());
@@ -130,6 +171,10 @@ public class VueLivreur extends AbstractVue implements IVueLivreur {
         afficherSeparateur();
     }
 
+    /**
+     * Met à jour l'affichage lorsqu'une commande change d'état.
+     * @param source L'objet source de l'événement (généralement une commande).
+     */
     @Override
     public void actualiser(Object source) {
         if (source instanceof Commande) {
@@ -148,28 +193,4 @@ public class VueLivreur extends AbstractVue implements IVueLivreur {
             }
         }
     }
-
-    public void marquerCommandeLivree(Commande commande) {
-        if (commande.getEtat() != EtatCommande.PRETE) {
-            System.out.println("⚠️ La commande n'est pas encore prête à être livrée");
-            return;
-        }
-        // ... reste du code pour marquer comme livrée ...
-    }
-    public void selectionnerCommandeALivrer() {
-        List<Commande> commandes = livreur.getCommandesALivrer();
-        if (commandes.isEmpty()) {
-            afficherInfo("Aucune commande à livrer pour le moment.");
-            return;
-        }
-
-        afficherCommandesALivrer();
-
-        int choix = lireEntreeNumerique("\nNuméro de la commande à livrer", 1, commandes.size());
-        Commande commande = commandes.get(choix - 1);
-
-        controleur.traiterAction("LIVREUR_LIVRER_" + commande.getNumeroCommande());
-    }
-
-
 }
