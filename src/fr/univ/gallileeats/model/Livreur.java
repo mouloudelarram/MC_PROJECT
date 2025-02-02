@@ -102,6 +102,9 @@ public class Livreur extends Utilisateur implements Observateur {
         if (!commandesALivrer.contains(commande)) {
             throw new IllegalArgumentException("Cette commande n'est pas assignée à ce livreur");
         }
+        if (commande.getEtat() != EtatCommande.PRETE) {
+            throw new IllegalStateException("La commande doit être prête avant d'être livrée");
+        }
 
         commandesALivrer.remove(commande);
         historiqueLivraisons.add(commande);
@@ -112,7 +115,6 @@ public class Livreur extends Utilisateur implements Observateur {
 
         updateStatut();
         updateDisponibilite();
-        updateTempsEstimation();
     }
 
     public void signalerProblemeLivraison(Commande commande, String raison) {
@@ -155,8 +157,26 @@ public class Livreur extends Utilisateur implements Observateur {
     public void actualiser(Object source) {
         if (source instanceof Commande) {
             Commande commande = (Commande) source;
-            if (commande.getEtat() == EtatCommande.PRETE) {
-                updateTempsEstimation();
+            // Vérifier si la commande est prête et en mode livraison
+            if (commande.getEtat() == EtatCommande.PRETE &&
+                    commande.getModeLivraison() == Commande.ModeLivraison.LIVRAISON &&
+                    this.isDisponible()) {
+
+                // Vérifier que la commande n'est pas déjà prise en charge
+                if (!commandesALivrer.contains(commande)) {
+                    commandesALivrer.add(commande);
+                    commande.setLivreur(this);
+
+                    String message = String.format(
+                            "Nouvelle commande disponible pour livraison : %s\nClient : %s\nAdresse : %s",
+                            commande.getNumeroCommande(),
+                            commande.getClient().getNom(),
+                            commande.getAdresseLivraison()
+                    );
+                    this.ajouterNotification(message);
+
+                    this.updateDisponibilite();
+                }
             }
         }
     }

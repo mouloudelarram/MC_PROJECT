@@ -63,7 +63,7 @@ public class Commande implements Sujet {
         this.menu = menu;
         this.nombrePersonnes = nombrePersonnes;
         this.modeLivraison = modeLivraison;
-        this.etat = EtatCommande.NOUVELLE;
+        this.etat = null;
         this.observateurs = new ArrayList<>();
         this.dateCommande = new Date();
         this.historique = new ArrayList<>();
@@ -109,7 +109,14 @@ public class Commande implements Sujet {
         try {
             strategyPaiement.payer(total);
             this.estPaye = true;
-            changerEtat(EtatCommande.EN_PREPARATION);
+
+            // Changement d'état et notification des cuisiniers
+            if (this.etat == EtatCommande.NOUVELLE) {
+                changerEtat(EtatCommande.EN_PREPARATION);
+                // Les cuisiniers seront notifiés via le changement d'état
+                notifierObservateurs();
+            }
+
             ajouterEvenementHistorique("Paiement effectué avec succès");
         } catch (Exception e) {
             ajouterEvenementHistorique("Échec du paiement: " + e.getMessage());
@@ -165,24 +172,88 @@ public class Commande implements Sujet {
     }
 
     // Gestion des états
+    @Override
     public void changerEtat(EtatCommande nouvelEtat) {
-        if (!estTransitionValide(nouvelEtat)) {
-            throw new IllegalStateException("Transition d'état invalide de " +
-                    this.etat + " vers " + nouvelEtat);
+        if (nouvelEtat == null) {
+            throw new IllegalArgumentException("Le nouvel état ne peut pas être null");
         }
 
-        EtatCommande ancienEtat = this.etat;
-        this.etat = nouvelEtat;
+        if (this.etat == null) {
+            // Premier changement d'état
+            if (nouvelEtat != EtatCommande.NOUVELLE) {
+                throw new IllegalStateException("La première état doit être NOUVELLE");
+            }
+            this.etat = nouvelEtat;
+            ajouterEvenementHistorique("État initial: " + nouvelEtat.getLibelle());
+            notifierCuisiniers();
+            return;
+        }
 
-        gererChangementEtat(ancienEtat, nouvelEtat);
-        ajouterEvenementHistorique("État changé : " + nouvelEtat.getLibelle());
-        notifierObservateurs();
+        if (!this.etat.peutPasserA(nouvelEtat)) {
+            throw new IllegalStateException(
+                    String.format("Transition invalide: %s vers %s",
+                            this.etat.getLibelle(), nouvelEtat.getLibelle())
+            );
+        }
+
+        validerTransition(nouvelEtat);
+        this.etat = nouvelEtat;
+        ajouterEvenementHistorique("État changé: " + nouvelEtat.getLibelle());
+        notifierSelonEtat(nouvelEtat);
     }
+
+    private void validerTransition(EtatCommande nouvelEtat) {
+        if (nouvelEtat == EtatCommande.EN_PREPARATION && !estPaye) {
+            throw new IllegalStateException("La commande doit être payée");
+        }
+        if (nouvelEtat == EtatCommande.EN_LIVRAISON &&
+                modeLivraison == ModeLivraison.LIVRAISON &&
+                livreur == null) {
+            throw new IllegalStateException("Un livreur doit être assigné");
+        }
+    }
+    private void notifierSelonEtat(EtatCommande nouvelEtat) {
+        switch (nouvelEtat) {
+            case NOUVELLE:
+                notifierCuisiniers();
+                break;
+            case PRETE:
+                if (modeLivraison == ModeLivraison.LIVRAISON) {
+                    notifierLivreursDisponibles();
+                }
+                break;
+            default:
+                notifierObservateurs();
+        }
+    }
+
+    private void notifierCuisiniers() {
+        for (Observateur obs : observateurs) {
+            if (obs instanceof Cuisinier) {
+                obs.actualiser(this);
+            }
+        }
+    }
+
+    private void notifierLivreursDisponibles() {
+        for (Observateur obs : observateurs) {
+            if (obs instanceof Livreur && ((Livreur) obs).isDisponible()) {
+                obs.actualiser(this);
+            }
+        }
+    }
+
 
     private void gererChangementEtat(EtatCommande ancienEtat, EtatCommande nouvelEtat) {
         switch (nouvelEtat) {
             case EN_PREPARATION:
                 verifierPaiement();
+                notifierObservateurs(); // Notifier les cuisiniers
+                break;
+            case PRETE:
+                if (modeLivraison == ModeLivraison.LIVRAISON) {
+                    notifierObservateurs(); // Notifier les livreurs disponibles
+                }
                 break;
             case EN_LIVRAISON:
                 verifierLivreur();
@@ -218,24 +289,15 @@ public class Commande implements Sujet {
     private boolean estTransitionValide(EtatCommande nouvelEtat) {
         switch (this.etat) {
             case NOUVELLE:
-                return nouvelEtat == EtatCommande.EN_PREPARATION ||
-                        nouvelEtat == EtatCommande.ANNULEE;
+                return nouvelEtat == EtatCommande.EN_PREPARATION;
             case EN_PREPARATION:
-                return nouvelEtat == EtatCommande.PRETE ||
-                        nouvelEtat == EtatCommande.ANNULEE;
+                return nouvelEtat == EtatCommande.PRETE;
             case PRETE:
-                return nouvelEtat == EtatCommande.EN_LIVRAISON ||
-                        nouvelEtat == EtatCommande.SERVIE ||
-                        nouvelEtat == EtatCommande.ANNULEE;
+                return nouvelEtat == EtatCommande.EN_LIVRAISON || nouvelEtat == EtatCommande.SERVIE;
             case EN_LIVRAISON:
-                return nouvelEtat == EtatCommande.LIVREE ||
-                        nouvelEtat == EtatCommande.ANNULEE;
-            case LIVREE:
-            case SERVIE:
-            case ANNULEE:
-                return false;
+                return nouvelEtat == EtatCommande.LIVREE;
             default:
-                return false;
+                return nouvelEtat == EtatCommande.ANNULEE;
         }
     }
 

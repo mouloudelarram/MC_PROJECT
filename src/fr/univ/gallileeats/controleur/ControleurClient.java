@@ -72,7 +72,6 @@ public class ControleurClient extends AbstractControleur {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
 
         try {
-            // Affichage des menus disponibles
             List<Menu> menus = GalileeEats.getMenusDisponibles();
             System.out.println("\n=== Menus Disponibles ===");
             for (int i = 0; i < menus.size(); i++) {
@@ -88,7 +87,6 @@ public class ControleurClient extends AbstractControleur {
             int choixMenu = lireEntier("Choisissez un menu", 1, menus.size());
             Menu menuChoisi = menus.get(choixMenu - 1);
 
-            // Choix du mode de livraison
             System.out.println("\nMode de livraison :");
             System.out.println("1. Livraison à domicile");
             System.out.println("2. Sur place");
@@ -97,8 +95,13 @@ public class ControleurClient extends AbstractControleur {
             int choixLivraison = lireEntier("Votre choix", 1, 3);
             Commande.ModeLivraison modeLivraison = Commande.ModeLivraison.values()[choixLivraison - 1];
 
-            // Création de la commande
             commandeEnCours = new Commande(client, menuChoisi, 1, modeLivraison);
+
+            // Ajouter les observateurs
+            List<Cuisinier> cuisiniers = controleurPrincipal.getObservateursCuisiniers();
+            for (Cuisinier cuisinier : cuisiniers) {
+                commandeEnCours.ajouterObservateur(cuisinier);
+            }
 
             if (modeLivraison == Commande.ModeLivraison.LIVRAISON) {
                 System.out.println("\nAdresse de livraison actuelle : " + client.getAdresseLivraison());
@@ -107,23 +110,37 @@ public class ControleurClient extends AbstractControleur {
                     String nouvelleAdresse = scanner.nextLine();
                     commandeEnCours.setAdresseLivraison(nouvelleAdresse);
                 }
+
+                List<Livreur> livreurs = controleurPrincipal.getObservateursLivreurs();
+                for (Livreur livreur : livreurs) {
+                    if (livreur.isDisponible()) {
+                        commandeEnCours.ajouterObservateur(livreur);
+                    }
+                }
             }
 
-            // Options supplémentaires
             ajouterOptionsSupplementaires(menuChoisi);
-
-            // Affichage du récapitulatif
             afficherRecapitulatifCommande();
 
             if (confirmerAction("Confirmer la commande ?")) {
-                // Procéder au paiement
                 afficherFormulairePaiement();
 
                 if (commandeEnCours.estPayee()) {
+                    // Ajouter l'observateur client
+                    commandeEnCours.ajouterObservateur(client);
+
+                    // Initialiser l'état
+                    commandeEnCours.changerEtat(EtatCommande.NOUVELLE);
+
+                    // Ajouter la commande au client
                     client.ajouterCommande(commandeEnCours);
+
                     System.out.println("\n✅ Commande créée avec succès !");
                     System.out.println("Numéro de commande : " + commandeEnCours.getNumeroCommande());
                     System.out.printf("Total : %.2f€%n", commandeEnCours.getTotal());
+
+                    // Passer à la préparation après confirmation
+                    commandeEnCours.changerEtat(EtatCommande.EN_PREPARATION);
                 }
             }
 
@@ -134,7 +151,6 @@ public class ControleurClient extends AbstractControleur {
         attendreTouche();
         vue.afficher();
     }
-
     private MenuComponent ajouterSauceSupplementaire(MenuComponent menu) {
         System.out.println("\nSauces disponibles :");
         System.out.println("1. Sauce BBQ (+0.50€)");

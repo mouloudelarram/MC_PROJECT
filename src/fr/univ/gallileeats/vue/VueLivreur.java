@@ -126,17 +126,42 @@ public class VueLivreur extends AbstractVue implements IVueLivreur {
     public void actualiser(Object source) {
         if (source instanceof Commande) {
             Commande commande = (Commande) source;
-            String message = "La commande n°" + commande.getNumeroCommande() +
-                    " est passée à l'état: " + commande.getEtat().getLibelle();
-
-            if (commande.getEtat() == EtatCommande.PRETE) {
-                message += "\n⚡ À récupérer au restaurant !";
-                message += "\n👤 Client : " + commande.getClient().getNom();
-                message += "\n📍 Adresse : " + commande.getAdresseLivraison();
+            // Vérifier que la commande est prête et en mode livraison
+            if (commande.getEtat() == EtatCommande.PRETE &&
+                    commande.getModeLivraison() == Commande.ModeLivraison.LIVRAISON) {
+                String message = String.format(
+                        "Nouvelle commande disponible n°%s\nClient : %s\nAdresse : %s",
+                        commande.getNumeroCommande(),
+                        commande.getClient().getNom(),
+                        commande.getAdresseLivraison()
+                );
+                notifications.add(message);
+                afficher();
             }
-
-            notifications.add(message);
-            afficher();
         }
     }
+
+    public void marquerCommandeLivree(Commande commande) {
+        if (commande.getEtat() != EtatCommande.PRETE) {
+            System.out.println("⚠️ La commande n'est pas encore prête à être livrée");
+            return;
+        }
+        // ... reste du code pour marquer comme livrée ...
+    }
+    public void selectionnerCommandeALivrer() {
+        List<Commande> commandes = livreur.getCommandesALivrer();
+        if (commandes.isEmpty()) {
+            afficherInfo("Aucune commande à livrer pour le moment.");
+            return;
+        }
+
+        afficherCommandesALivrer();
+
+        int choix = lireEntreeNumerique("\nNuméro de la commande à livrer", 1, commandes.size());
+        Commande commande = commandes.get(choix - 1);
+
+        controleur.traiterAction("LIVREUR_LIVRER_" + commande.getNumeroCommande());
+    }
+
+
 }

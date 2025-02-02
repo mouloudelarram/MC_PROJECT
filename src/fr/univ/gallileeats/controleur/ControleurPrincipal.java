@@ -3,10 +3,13 @@ package fr.univ.gallileeats.controleur;
 import fr.univ.gallileeats.interfaces.IControleur;
 import fr.univ.gallileeats.model.*;
 import fr.univ.gallileeats.vue.*;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class ControleurPrincipal extends AbstractControleur {
     private Map<String, IControleur> sousControleurs;
@@ -26,7 +29,8 @@ public class ControleurPrincipal extends AbstractControleur {
         ajouterHandler("MENU_PRINCIPAL_2", params -> connecterLivreur());
         ajouterHandler("MENU_PRINCIPAL_3", params -> connecterResponsable());
         ajouterHandler("MENU_PRINCIPAL_4", params -> connecterAdmin());
-        ajouterHandler("MENU_PRINCIPAL_5", params -> quitterApplication());
+        ajouterHandler("MENU_PRINCIPAL_5", params -> connecterCuisinier());
+        ajouterHandler("MENU_PRINCIPAL_6", params -> quitterApplication());
     }
 
     public void initialiserSousControleurs() {
@@ -34,6 +38,7 @@ public class ControleurPrincipal extends AbstractControleur {
         sousControleurs.put("LIVREUR", new ControleurLivreur(this));
         sousControleurs.put("ADMIN", new ControleurAdmin(this));
         sousControleurs.put("RESPONSABLE", new ControleurResponsable(this));
+        sousControleurs.put("CUISINIER", new ControleurCuisinier(this));
     }
 
     @Override
@@ -139,6 +144,15 @@ public class ControleurPrincipal extends AbstractControleur {
         vueAdmin.afficher();
     }
 
+    private void connecterCuisinier() {
+        VueCuisinier vueCuisinier = new VueCuisinier(
+                sousControleurs.get("CUISINIER"),
+                (Cuisinier) utilisateursConnectes.get("CUISINIER")
+        );
+        sousControleurs.get("CUISINIER").setVue(vueCuisinier);
+        vueCuisinier.afficher();
+    }
+
     // Méthodes de gestion de la session
     public void deconnecter() {
         utilisateursConnectes.clear();
@@ -166,6 +180,24 @@ public class ControleurPrincipal extends AbstractControleur {
             }
         }
         return null;
+    }
+
+    public List<Utilisateur> getUtilisateurs(String type) {
+        return new ArrayList<>(utilisateursConnectes.values()).stream()
+                .filter(u -> u.getRole().equals(type))
+                .collect(Collectors.toList());
+    }
+
+    public List<Cuisinier> getObservateursCuisiniers() {
+        return getUtilisateurs("CUISINIER").stream()
+                .map(u -> (Cuisinier) u)
+                .collect(Collectors.toList());
+    }
+
+    public List<Livreur> getObservateursLivreurs() {
+        return getUtilisateurs("LIVREUR").stream()
+                .map(u -> (Livreur) u)
+                .collect(Collectors.toList());
     }
 
     // Méthodes de validation

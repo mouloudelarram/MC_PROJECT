@@ -57,7 +57,6 @@ public class Client extends Utilisateur implements Observateur {
         }
         commandes.add(commande);
         commande.ajouterObservateur(this);
-        ajouterPoints(calculerPointsCommande(commande));
     }
 
     public void supprimerCommande(Commande commande) {

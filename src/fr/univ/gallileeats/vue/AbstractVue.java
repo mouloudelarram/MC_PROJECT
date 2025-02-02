@@ -109,6 +109,8 @@ public abstract class AbstractVue implements IVue, Observateur {
         }
     }
 
+
+
     protected void attendreTouche() {
         System.out.print("\nAppuyez sur Entrée pour continuer...");
         scanner.nextLine();

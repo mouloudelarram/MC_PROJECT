@@ -120,6 +120,8 @@ public class GalileeEats {
         );
         controleurPrincipal.setUtilisateurConnecte("RESPONSABLE", responsable);
 
+
+
         controleurPrincipal.initialiserSousControleurs();
 
         // Affichage de la vue principale

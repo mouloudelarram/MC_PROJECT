@@ -11,6 +11,7 @@ public class VuePrincipale extends AbstractVue {
             "Connexion Livreur",
             "Connexion Responsable Campus",
             "Connexion Administrateur",
+            "Connexion Cuisinier",
             "Quitter"
     };
 
