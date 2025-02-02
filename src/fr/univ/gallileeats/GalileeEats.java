@@ -120,6 +120,17 @@ public class GalileeEats {
         );
         controleurPrincipal.setUtilisateurConnecte("RESPONSABLE", responsable);
 
+        Cuisinier cuisinier = new Cuisinier(
+                "CUI1",
+                "Pierre Chef",
+                "chef@galilee.fr",
+                "password123",
+                "Cuisine française"
+        );
+        controleurPrincipal.setUtilisateurConnecte("CUISINIER", cuisinier);
+
+
+
         controleurPrincipal.initialiserSousControleurs();
 
         // Affichage de la vue principale

@@ -92,10 +92,18 @@ public class VueLivreur extends AbstractVue implements IVueLivreur {
 
     public void afficherFormulaireLivraison() {
         List<Commande> commandes = livreur.getCommandesALivrer();
-        afficherCommandesALivrer();
-        if (!commandes.isEmpty()) {
-            System.out.println("\nEntrez le numéro de la commande à marquer comme livrée (0 pour annuler)");
+        if (commandes.isEmpty()) {
+            System.out.println("Aucune commande à livrer.");
+            return;
         }
+
+        System.out.println("\nCommandes disponibles pour livraison :");
+        for (int i = 0; i < commandes.size(); i++) {
+            System.out.printf("\n%d. Commande #%s%n", (i + 1), commandes.get(i).getNumeroCommande());
+            afficherDetailsCommande(commandes.get(i));
+        }
+
+        System.out.println("\nEntrez le numéro de l'option (1-" + commandes.size() + "), 0 pour annuler :");
     }
 
     public void afficherConfirmationLivraison(Commande commande) {
@@ -126,17 +134,42 @@ public class VueLivreur extends AbstractVue implements IVueLivreur {
     public void actualiser(Object source) {
         if (source instanceof Commande) {
             Commande commande = (Commande) source;
-            String message = "La commande n°" + commande.getNumeroCommande() +
-                    " est passée à l'état: " + commande.getEtat().getLibelle();
-
-            if (commande.getEtat() == EtatCommande.PRETE) {
-                message += "\n⚡ À récupérer au restaurant !";
-                message += "\n👤 Client : " + commande.getClient().getNom();
-                message += "\n📍 Adresse : " + commande.getAdresseLivraison();
+            // Vérifier que la commande est prête et en mode livraison
+            if (commande.getEtat() == EtatCommande.PRETE &&
+                    commande.getModeLivraison() == Commande.ModeLivraison.LIVRAISON) {
+                String message = String.format(
+                        "Nouvelle commande disponible n°%s\nClient : %s\nAdresse : %s",
+                        commande.getNumeroCommande(),
+                        commande.getClient().getNom(),
+                        commande.getAdresseLivraison()
+                );
+                notifications.add(message);
+                afficher();
             }
-
-            notifications.add(message);
-            afficher();
         }
     }
+
+    public void marquerCommandeLivree(Commande commande) {
+        if (commande.getEtat() != EtatCommande.PRETE) {
+            System.out.println("⚠️ La commande n'est pas encore prête à être livrée");
+            return;
+        }
+        // ... reste du code pour marquer comme livrée ...
+    }
+    public void selectionnerCommandeALivrer() {
+        List<Commande> commandes = livreur.getCommandesALivrer();
+        if (commandes.isEmpty()) {
+            afficherInfo("Aucune commande à livrer pour le moment.");
+            return;
+        }
+
+        afficherCommandesALivrer();
+
+        int choix = lireEntreeNumerique("\nNuméro de la commande à livrer", 1, commandes.size());
+        Commande commande = commandes.get(choix - 1);
+
+        controleur.traiterAction("LIVREUR_LIVRER_" + commande.getNumeroCommande());
+    }
+
+
 }

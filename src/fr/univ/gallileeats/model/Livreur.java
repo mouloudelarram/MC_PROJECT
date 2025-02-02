@@ -102,7 +102,11 @@ public class Livreur extends Utilisateur implements Observateur {
         if (!commandesALivrer.contains(commande)) {
             throw new IllegalArgumentException("Cette commande n'est pas assignée à ce livreur");
         }
+        if (commande.getEtat() != EtatCommande.PRETE) {
+            throw new IllegalStateException("La commande n'est pas prête pour la livraison");
+        }
 
+        commande.changerEtat(EtatCommande.EN_LIVRAISON);
         commandesALivrer.remove(commande);
         historiqueLivraisons.add(commande);
         commande.changerEtat(EtatCommande.LIVREE);
@@ -112,8 +116,8 @@ public class Livreur extends Utilisateur implements Observateur {
 
         updateStatut();
         updateDisponibilite();
-        updateTempsEstimation();
     }
+
 
     public void signalerProblemeLivraison(Commande commande, String raison) {
         if (!commandesALivrer.contains(commande)) {
@@ -123,12 +127,22 @@ public class Livreur extends Utilisateur implements Observateur {
             throw new IllegalArgumentException("Une raison doit être fournie");
         }
 
-        commande.setCommentaires("Problème de livraison: " + raison);
-        commandesALivrer.remove(commande);
-        commande.changerEtat(EtatCommande.ANNULEE);
-
-        updateDisponibilite();
-        updateTempsEstimation();
+        try {
+            commande.setCommentaires("Problème de livraison: " + raison);
+            commande.changerEtat(EtatCommande.ANNULEE);
+            commandesALivrer.remove(commande);
+            updateDisponibilite();
+        } catch (IllegalStateException e) {
+            // Réessayer en passant d'abord à EN_LIVRAISON si la commande est PRETE
+            if (commande.getEtat() == EtatCommande.PRETE) {
+                commande.changerEtat(EtatCommande.EN_LIVRAISON);
+                commande.changerEtat(EtatCommande.ANNULEE);
+                commandesALivrer.remove(commande);
+                updateDisponibilite();
+            } else {
+                throw e;
+            }
+        }
     }
 
     private void updateStatut() {
@@ -155,8 +169,26 @@ public class Livreur extends Utilisateur implements Observateur {
     public void actualiser(Object source) {
         if (source instanceof Commande) {
             Commande commande = (Commande) source;
-            if (commande.getEtat() == EtatCommande.PRETE) {
-                updateTempsEstimation();
+            // Vérifier si la commande est prête et en mode livraison
+            if (commande.getEtat() == EtatCommande.PRETE &&
+                    commande.getModeLivraison() == Commande.ModeLivraison.LIVRAISON &&
+                    this.isDisponible()) {
+
+                // Vérifier que la commande n'est pas déjà prise en charge
+                if (!commandesALivrer.contains(commande)) {
+                    commandesALivrer.add(commande);
+                    commande.setLivreur(this);
+
+                    String message = String.format(
+                            "Nouvelle commande disponible pour livraison : %s\nClient : %s\nAdresse : %s",
+                            commande.getNumeroCommande(),
+                            commande.getClient().getNom(),
+                            commande.getAdresseLivraison()
+                    );
+                    this.ajouterNotification(message);
+
+                    this.updateDisponibilite();
+                }
             }
         }
     }

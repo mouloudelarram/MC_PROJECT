@@ -3,12 +3,16 @@ package fr.univ.gallileeats.model;
 import fr.univ.gallileeats.interfaces.Sujet;
 import fr.univ.gallileeats.interfaces.Observateur;
 import fr.univ.gallileeats.interfaces.StrategyPaiement;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
 
 public class Commande implements Sujet {
     // Compteur statique pour générer les numéros de commande
+
+    private List<String> reductionsAppliquees;
+    private double totalAvantReductions;
     private static int compteur = 0;
 
     // Attributs de base
@@ -60,11 +64,13 @@ public class Commande implements Sujet {
         this.menu = menu;
         this.nombrePersonnes = nombrePersonnes;
         this.modeLivraison = modeLivraison;
-        this.etat = EtatCommande.NOUVELLE;
+        this.etat = null;
         this.observateurs = new ArrayList<>();
         this.dateCommande = new Date();
         this.historique = new ArrayList<>();
         this.estPaye = false;
+        this.reductionsAppliquees = new ArrayList<>();
+        this.totalAvantReductions = 0.0;
 
         // Gestion de l'adresse selon le mode de livraison
         if (modeLivraison == ModeLivraison.LIVRAISON && client instanceof Client) {
@@ -104,7 +110,14 @@ public class Commande implements Sujet {
         try {
             strategyPaiement.payer(total);
             this.estPaye = true;
-            changerEtat(EtatCommande.EN_PREPARATION);
+
+            // Changement d'état et notification des cuisiniers
+            if (this.etat == EtatCommande.NOUVELLE) {
+                changerEtat(EtatCommande.EN_PREPARATION);
+                // Les cuisiniers seront notifiés via le changement d'état
+                notifierObservateurs();
+            }
+
             ajouterEvenementHistorique("Paiement effectué avec succès");
         } catch (Exception e) {
             ajouterEvenementHistorique("Échec du paiement: " + e.getMessage());
@@ -114,8 +127,16 @@ public class Commande implements Sujet {
 
     // Calcul du total
     public void calculerTotal() {
-        // Prix de base selon le menu
-        this.total = menu.getPrix() * nombrePersonnes;
+        // Prix de base selon le menu et le nombre de personnes
+        this.total = 0.0;
+
+        // Ajouter le prix de chaque élément du menu
+        for (MenuComponent element : menu.getElements()) {
+            this.total += element.getPrix();
+        }
+
+        // Multiplier par le nombre de personnes
+        this.total *= nombrePersonnes;
 
         // Réductions selon le type de client et la taille de la commande
         appliquerReductions();
@@ -127,16 +148,18 @@ public class Commande implements Sujet {
     }
 
     private void appliquerReductions() {
+        this.totalAvantReductions = this.total;
+
         // Réduction pour les grandes commandes
         if (nombrePersonnes >= 20) {
             total *= 0.9; // 10% de réduction
-            ajouterEvenementHistorique("Réduction de 10% appliquée (commande groupe)");
+            reductionsAppliquees.add("Réduction groupe (-10%)");
         }
 
         // Réduction étudiant
         if (client instanceof Client && ((Client) client).estEtudiant()) {
             total *= 0.85; // 15% de réduction
-            ajouterEvenementHistorique("Réduction étudiant de 15% appliquée");
+            reductionsAppliquees.add("Réduction étudiant (-15%)");
         }
     }
 
@@ -151,23 +174,95 @@ public class Commande implements Sujet {
 
     // Gestion des états
     public void changerEtat(EtatCommande nouvelEtat) {
-        if (!estTransitionValide(nouvelEtat)) {
-            throw new IllegalStateException("Transition d'état invalide de " +
-                    this.etat + " vers " + nouvelEtat);
+        if (nouvelEtat == null) {
+            throw new IllegalArgumentException("Le nouvel état ne peut pas être null");
         }
 
-        EtatCommande ancienEtat = this.etat;
-        this.etat = nouvelEtat;
+        if (this.etat == null) {
+            this.etat = nouvelEtat;
+            ajouterEvenementHistorique("État initial: " + nouvelEtat.getLibelle());
+            notifierObservateurs();
+            return;
+        }
 
-        gererChangementEtat(ancienEtat, nouvelEtat);
-        ajouterEvenementHistorique("État changé : " + nouvelEtat.getLibelle());
+        if (!this.etat.peutPasserA(nouvelEtat)) {
+            throw new IllegalStateException(
+                    String.format("Transition invalide: %s vers %s",
+                            this.etat.getLibelle(), nouvelEtat.getLibelle())
+            );
+        }
+
+        // Vérifications spécifiques avant le changement d'état
+        if (nouvelEtat == EtatCommande.ANNULEE) {
+            // Permettre l'annulation depuis n'importe quel état non final
+            if (this.etat != EtatCommande.LIVREE &&
+                    this.etat != EtatCommande.SERVIE) {
+                this.etat = nouvelEtat;
+                ajouterEvenementHistorique("Commande annulée: " + nouvelEtat.getLibelle());
+                notifierObservateurs();
+                return;
+            }
+        }
+
+        // Reste de la logique de changement d'état
+        this.etat = nouvelEtat;
+        ajouterEvenementHistorique("État changé: " + nouvelEtat.getLibelle());
         notifierObservateurs();
     }
+
+    private void validerTransition(EtatCommande nouvelEtat) {
+        if (nouvelEtat == EtatCommande.EN_PREPARATION && !estPaye) {
+            throw new IllegalStateException("La commande doit être payée");
+        }
+        if (nouvelEtat == EtatCommande.EN_LIVRAISON &&
+                modeLivraison == ModeLivraison.LIVRAISON &&
+                livreur == null) {
+            throw new IllegalStateException("Un livreur doit être assigné");
+        }
+    }
+
+    private void notifierSelonEtat(EtatCommande nouvelEtat) {
+        switch (nouvelEtat) {
+            case NOUVELLE:
+                notifierCuisiniers();
+                break;
+            case PRETE:
+                if (modeLivraison == ModeLivraison.LIVRAISON) {
+                    notifierLivreursDisponibles();
+                }
+                break;
+            default:
+                notifierObservateurs();
+        }
+    }
+
+    private void notifierCuisiniers() {
+        for (Observateur obs : observateurs) {
+            if (obs instanceof Cuisinier) {
+                obs.actualiser(this);
+            }
+        }
+    }
+
+    private void notifierLivreursDisponibles() {
+        for (Observateur obs : observateurs) {
+            if (obs instanceof Livreur && ((Livreur) obs).isDisponible()) {
+                obs.actualiser(this);
+            }
+        }
+    }
+
 
     private void gererChangementEtat(EtatCommande ancienEtat, EtatCommande nouvelEtat) {
         switch (nouvelEtat) {
             case EN_PREPARATION:
                 verifierPaiement();
+                notifierObservateurs(); // Notifier les cuisiniers
+                break;
+            case PRETE:
+                if (modeLivraison == ModeLivraison.LIVRAISON) {
+                    notifierObservateurs(); // Notifier les livreurs disponibles
+                }
                 break;
             case EN_LIVRAISON:
                 verifierLivreur();
@@ -203,24 +298,15 @@ public class Commande implements Sujet {
     private boolean estTransitionValide(EtatCommande nouvelEtat) {
         switch (this.etat) {
             case NOUVELLE:
-                return nouvelEtat == EtatCommande.EN_PREPARATION ||
-                        nouvelEtat == EtatCommande.ANNULEE;
+                return nouvelEtat == EtatCommande.EN_PREPARATION;
             case EN_PREPARATION:
-                return nouvelEtat == EtatCommande.PRETE ||
-                        nouvelEtat == EtatCommande.ANNULEE;
+                return nouvelEtat == EtatCommande.PRETE;
             case PRETE:
-                return nouvelEtat == EtatCommande.EN_LIVRAISON ||
-                        nouvelEtat == EtatCommande.SERVIE ||
-                        nouvelEtat == EtatCommande.ANNULEE;
+                return nouvelEtat == EtatCommande.EN_LIVRAISON || nouvelEtat == EtatCommande.SERVIE;
             case EN_LIVRAISON:
-                return nouvelEtat == EtatCommande.LIVREE ||
-                        nouvelEtat == EtatCommande.ANNULEE;
-            case LIVREE:
-            case SERVIE:
-            case ANNULEE:
-                return false;
+                return nouvelEtat == EtatCommande.LIVREE;
             default:
-                return false;
+                return nouvelEtat == EtatCommande.ANNULEE;
         }
     }
 
@@ -250,23 +336,87 @@ public class Commande implements Sujet {
     }
 
     // Getters
-    public String getNumeroCommande() { return numeroCommande; }
-    public Utilisateur getClient() { return client; }
-    public MenuComponent getMenu() { return menu; }
-    public EtatCommande getEtat() { return etat; }
-    public double getTotal() { return total; }
-    public Date getDateCommande() { return dateCommande; }
-    public Date getDateLivraison() { return dateLivraison; }
-    public String getAdresseLivraison() { return adresseLivraison; }
-    public ModeLivraison getModeLivraison() { return modeLivraison; }
-    public Livreur getLivreur() { return livreur; }
-    public int getNombrePersonnes() { return nombrePersonnes; }
-    public String getCommentaires() { return commentaires; }
-    public boolean estPayee() { return estPaye; }
-    public String getEvenement() { return evenement; }
-    public List<String> getHistorique() { return new ArrayList<>(historique); }
+    public double getTotalAvantReductions() {
+        return totalAvantReductions;
+    }
+
+    public List<String> getReductionsAppliquees() {
+        return new ArrayList<>(reductionsAppliquees);
+    }
+
+    public String getNumeroCommande() {
+        return numeroCommande;
+    }
+
+    public Utilisateur getClient() {
+        return client;
+    }
+
+    public MenuComponent getMenu() {
+        return menu;
+    }
+
+    public EtatCommande getEtat() {
+        return etat;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public Date getDateCommande() {
+        return dateCommande;
+    }
+
+    public Date getDateLivraison() {
+        return dateLivraison;
+    }
+
+    public String getAdresseLivraison() {
+        return adresseLivraison;
+    }
+
+    public ModeLivraison getModeLivraison() {
+        return modeLivraison;
+    }
+
+    public Livreur getLivreur() {
+        return livreur;
+    }
+
+    public int getNombrePersonnes() {
+        return nombrePersonnes;
+    }
+
+    public String getCommentaires() {
+        return commentaires;
+    }
+
+    public boolean estPayee() {
+        return estPaye;
+    }
+
+    public String getEvenement() {
+        return evenement;
+    }
+
+    public List<String> getHistorique() {
+        return new ArrayList<>(historique);
+    }
+
+    private double getReductionPourcentage() {
+        if (this.client instanceof Client && ((Client) this.client).estEtudiant()) {
+            return 0.15; // 15% de réduction étudiant
+        }
+        return 0.0;
+    }
 
     // Setters avec validation
+    public void setTotal(double total) {
+        this.total = total;
+        this.totalAvantReductions = total / (1 - getReductionPourcentage());
+    }
+
     public void setAdresseLivraison(String adresseLivraison) {
         if (modeLivraison == ModeLivraison.LIVRAISON &&
                 (adresseLivraison == null || adresseLivraison.trim().isEmpty())) {
@@ -275,6 +425,11 @@ public class Commande implements Sujet {
         this.adresseLivraison = adresseLivraison;
         ajouterEvenementHistorique("Adresse de livraison modifiée: " + adresseLivraison);
         notifierObservateurs();
+    }
+
+    public void setMenu(MenuComponent menu) {
+        this.menu = menu;
+        calculerTotal(); // Recalculate total with new menu
     }
 
     public void setLivreur(Livreur livreur) {

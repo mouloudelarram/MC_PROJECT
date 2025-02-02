@@ -3,6 +3,8 @@ package fr.univ.gallileeats.vue;
 import fr.univ.gallileeats.interfaces.IControleur;
 import fr.univ.gallileeats.interfaces.IVueClient;
 import fr.univ.gallileeats.model.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class VueClient extends AbstractVue implements IVueClient {
@@ -194,20 +196,55 @@ public class VueClient extends AbstractVue implements IVueClient {
     public void afficherRecapitulatifCommande(Commande commande) {
         System.out.println("\n=== Récapitulatif de la commande ===");
         System.out.println("Menu : " + commande.getMenu().getNom());
+
+        // Affichage des éléments de base du menu
+        System.out.println("\nÉléments du menu :");
         commande.getMenu().getElements().forEach(element ->
                 System.out.printf("- %s (%.2f€)%n", element.getNom(), element.getPrix())
         );
+
+        // Affichage des suppléments si présents
+        afficherSupplementsRecap(commande.getMenu());
+
+        // Affichage des réductions
+        if (!commande.getReductionsAppliquees().isEmpty()) {
+            System.out.println("\nRéductions appliquées :");
+            System.out.printf("Total avant réductions : %.2f€%n", commande.getTotalAvantReductions());
+            commande.getReductionsAppliquees().forEach(reduction ->
+                    System.out.println("- " + reduction)
+            );
+        }
 
         if (commande.getModeLivraison() == Commande.ModeLivraison.LIVRAISON) {
             System.out.println("\n📍 Livraison à : " + commande.getAdresseLivraison());
         }
 
-        // Afficher les réductions si applicable
-        if (client.estEtudiant()) {
-            System.out.println("🎓 Réduction étudiant appliquée (-15%)");
-        }
-
         System.out.printf("\n💰 Total à payer : %.2f€%n", commande.getTotal());
+    }
+
+    private void afficherSupplementsRecap(MenuComponent menu) {
+        if (menu instanceof PlatDecore) {
+            PlatDecore platDecore = (PlatDecore) menu;
+            List<OptionSupplement> supplements = new ArrayList<>();
+            MenuComponent current = menu;
+
+            // Collecte tous les suppléments
+            while (current instanceof PlatDecore) {
+                if (current instanceof OptionSupplement) {
+                    supplements.add((OptionSupplement) current);
+                }
+                current = ((PlatDecore) current).getPlatDeBase();
+            }
+
+            if (!supplements.isEmpty()) {
+                System.out.println("\nSuppléments ajoutés :");
+                supplements.forEach(supplement ->
+                        System.out.printf("- %s (+%.2f€)%n",
+                                supplement.getNomSupplement(),
+                                supplement.getPrixSupplementaire())
+                );
+            }
+        }
     }
 
     @Override

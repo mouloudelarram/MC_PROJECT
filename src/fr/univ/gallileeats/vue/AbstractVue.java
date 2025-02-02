@@ -97,9 +97,19 @@ public abstract class AbstractVue implements IVue, Observateur {
     }
 
     protected boolean confirmerAction(String message) {
-        System.out.print("\n" + message + " (oui/non) : ");
-        return scanner.nextLine().trim().equalsIgnoreCase("oui");
+        while (true) {
+            System.out.print("\n" + message + " (oui/non) : ");
+            String reponse = scanner.nextLine().trim().toLowerCase();
+            if (reponse.equals("oui")) {
+                return true;
+            } else if (reponse.equals("non")) {
+                return false;
+            }
+            System.out.println("⚠️ Veuillez répondre par 'oui' ou 'non'");
+        }
     }
+
+
 
     protected void attendreTouche() {
         System.out.print("\nAppuyez sur Entrée pour continuer...");

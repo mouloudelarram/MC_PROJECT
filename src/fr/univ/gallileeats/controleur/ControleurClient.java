@@ -5,6 +5,8 @@ import fr.univ.gallileeats.model.*;
 import fr.univ.gallileeats.vue.*;
 import fr.univ.gallileeats.strategie.*;
 import fr.univ.gallileeats.GalileeEats;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.Scanner;
@@ -70,7 +72,6 @@ public class ControleurClient extends AbstractControleur {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
 
         try {
-            // Affichage des menus disponibles
             List<Menu> menus = GalileeEats.getMenusDisponibles();
             System.out.println("\n=== Menus Disponibles ===");
             for (int i = 0; i < menus.size(); i++) {
@@ -86,7 +87,6 @@ public class ControleurClient extends AbstractControleur {
             int choixMenu = lireEntier("Choisissez un menu", 1, menus.size());
             Menu menuChoisi = menus.get(choixMenu - 1);
 
-            // Choix du mode de livraison
             System.out.println("\nMode de livraison :");
             System.out.println("1. Livraison à domicile");
             System.out.println("2. Sur place");
@@ -95,8 +95,14 @@ public class ControleurClient extends AbstractControleur {
             int choixLivraison = lireEntier("Votre choix", 1, 3);
             Commande.ModeLivraison modeLivraison = Commande.ModeLivraison.values()[choixLivraison - 1];
 
-            // Création de la commande
+            // Création unique de la commande
             commandeEnCours = new Commande(client, menuChoisi, 1, modeLivraison);
+
+            // Gestion des observateurs (Pattern Observer)
+            List<Cuisinier> cuisiniers = controleurPrincipal.getObservateursCuisiniers();
+            for (Cuisinier cuisinier : cuisiniers) {
+                commandeEnCours.ajouterObservateur(cuisinier);
+            }
 
             if (modeLivraison == Commande.ModeLivraison.LIVRAISON) {
                 System.out.println("\nAdresse de livraison actuelle : " + client.getAdresseLivraison());
@@ -105,20 +111,30 @@ public class ControleurClient extends AbstractControleur {
                     String nouvelleAdresse = scanner.nextLine();
                     commandeEnCours.setAdresseLivraison(nouvelleAdresse);
                 }
+
+                // Ajout des observateurs livreurs (Pattern Observer)
+                List<Livreur> livreurs = controleurPrincipal.getObservateursLivreurs();
+                for (Livreur livreur : livreurs) {
+                    if (livreur.isDisponible()) {
+                        commandeEnCours.ajouterObservateur(livreur);
+                    }
+                }
             }
 
-            // Options supplémentaires
+            // Gestion des options supplémentaires (Pattern Decorator)
             ajouterOptionsSupplementaires(menuChoisi);
 
             // Affichage du récapitulatif
             afficherRecapitulatifCommande();
 
             if (confirmerAction("Confirmer la commande ?")) {
-                // Procéder au paiement
                 afficherFormulairePaiement();
 
                 if (commandeEnCours.estPayee()) {
+                    commandeEnCours.ajouterObservateur(client);
+                    commandeEnCours.changerEtat(EtatCommande.NOUVELLE);  // Start as NOUVELLE instead of EN_PREPARATION
                     client.ajouterCommande(commandeEnCours);
+
                     System.out.println("\n✅ Commande créée avec succès !");
                     System.out.println("Numéro de commande : " + commandeEnCours.getNumeroCommande());
                     System.out.printf("Total : %.2f€%n", commandeEnCours.getTotal());
@@ -132,8 +148,70 @@ public class ControleurClient extends AbstractControleur {
         attendreTouche();
         vue.afficher();
     }
+    private MenuComponent ajouterSauceSupplementaire(MenuComponent menu) {
+        System.out.println("\nSauces disponibles :");
+        System.out.println("1. Sauce BBQ (+0.50€)");
+        System.out.println("2. Sauce Curry (+0.50€)");
+        System.out.println("3. Sauce Piquante (+0.50€)");
+        System.out.println("4. Sauce Mayonnaise (+0.50€)");
+        System.out.println("5. Sauce Ketchup (+0.50€)");
 
+        int choix = lireEntier("Choisissez une sauce", 1, 5);
+        switch (choix) {
+            case 1:
+                return new OptionSupplement(menu, "Sauce BBQ", 0.50,
+                        OptionSupplement.TypeSupplement.SAUCE, "Sauce BBQ fumée");
+            case 2:
+                return new OptionSupplement(menu, "Sauce Curry", 0.50,
+                        OptionSupplement.TypeSupplement.SAUCE, "Sauce curry douce");
+            case 3:
+                return new OptionSupplement(menu, "Sauce Piquante", 0.50,
+                        OptionSupplement.TypeSupplement.SAUCE, "Sauce piquante maison");
+            case 4:
+                return new OptionSupplement(menu, "Sauce Mayonnaise", 0.50,
+                        OptionSupplement.TypeSupplement.SAUCE, "Mayonnaise maison");
+            case 5:
+                return new OptionSupplement(menu, "Sauce Ketchup", 0.50,
+                        OptionSupplement.TypeSupplement.SAUCE, "Ketchup");
+            default:
+                return menu;
+        }
+    }
+
+    private MenuComponent ajouterPortionSupplementaire(MenuComponent menu) {
+        System.out.println("\nPortions supplémentaires disponibles :");
+        System.out.println("1. Double portion de viande/poisson (+4.00€)");
+        System.out.println("2. Portion extra de frites (+2.00€)");
+        System.out.println("3. Portion extra de légumes (+2.00€)");
+        System.out.println("4. Portion extra de riz (+1.50€)");
+        System.out.println("5. Portion extra de pain (+0.50€)");
+
+        int choix = lireEntier("Choisissez une portion supplémentaire", 1, 5);
+        switch (choix) {
+            case 1:
+                return new OptionSupplement(menu, "Double portion viande/poisson", 4.00,
+                        OptionSupplement.TypeSupplement.PORTION, "Double portion du plat principal");
+            case 2:
+                return new OptionSupplement(menu, "Extra frites", 2.00,
+                        OptionSupplement.TypeSupplement.PORTION, "Portion supplémentaire de frites");
+            case 3:
+                return new OptionSupplement(menu, "Extra légumes", 2.00,
+                        OptionSupplement.TypeSupplement.PORTION, "Portion supplémentaire de légumes");
+            case 4:
+                return new OptionSupplement(menu, "Extra riz", 1.50,
+                        OptionSupplement.TypeSupplement.PORTION, "Portion supplémentaire de riz");
+            case 5:
+                return new OptionSupplement(menu, "Extra pain", 0.50,
+                        OptionSupplement.TypeSupplement.PORTION, "Portion supplémentaire de pain");
+            default:
+                return menu;
+        }
+    }
+
+    // Mise à jour de la méthode ajouterOptionsSupplementaires pour une meilleure gestion des erreurs
     private void ajouterOptionsSupplementaires(Menu menu) {
+        MenuComponent menuModifie = commandeEnCours.getMenu();
+
         while (confirmerAction("\nVoulez-vous ajouter des options supplémentaires ?")) {
             System.out.println("\nOptions disponibles :");
             System.out.println("1. Ingrédient supplémentaire");
@@ -142,30 +220,50 @@ public class ControleurClient extends AbstractControleur {
 
             int choix = lireEntier("Votre choix", 1, 3);
 
-            switch (choix) {
-                case 1:
-                    ajouterIngredientSupplementaire();
-                    break;
-                    /*
-                case 2:
-                    ajouterSauceSupplementaire();
-                    break;
-                case 3:
-                    ajouterPortionSupplementaire();
-                    break;
-                     */
+            try {
+                switch (choix) {
+                    case 1:
+                        menuModifie = ajouterIngredientSupplementaire(menuModifie);
+                        break;
+                    case 2:
+                        menuModifie = ajouterSauceSupplementaire(menuModifie);
+                        break;
+                    case 3:
+                        menuModifie = ajouterPortionSupplementaire(menuModifie);
+                        break;
+                }
+
+                if (menuModifie != commandeEnCours.getMenu()) {
+                    // Instead of creating a new Commande, just update the menu
+                    commandeEnCours.setMenu(menuModifie);
+                    System.out.println("\n✅ Supplément ajouté avec succès !");
+                }
+            } catch (Exception e) {
+                System.out.println("\n⚠️ Erreur lors de l'ajout du supplément : " + e.getMessage());
             }
         }
     }
 
-    private void ajouterIngredientSupplementaire() {
-        // Exemple d'implémentation
+    private MenuComponent ajouterIngredientSupplementaire(MenuComponent menu) {
+        System.out.println("\nIngrédients disponibles :");
         System.out.println("1. Fromage (+1.00€)");
         System.out.println("2. Bacon (+1.50€)");
         System.out.println("3. Œuf (+1.00€)");
 
         int choix = lireEntier("Choisissez un ingrédient", 1, 3);
-        // Implémentation de l'ajout...
+        switch (choix) {
+            case 1:
+                return new OptionSupplement(menu, "Fromage", 1.0,
+                        OptionSupplement.TypeSupplement.INGREDIENT, "Fromage râpé");
+            case 2:
+                return new OptionSupplement(menu, "Bacon", 1.50,
+                        OptionSupplement.TypeSupplement.INGREDIENT, "Bacon fumé");
+            case 3:
+                return new OptionSupplement(menu, "Œuf", 1.0,
+                        OptionSupplement.TypeSupplement.INGREDIENT, "Œuf au plat");
+            default:
+                return menu;
+        }
     }
 
     @Override
@@ -267,16 +365,72 @@ public class ControleurClient extends AbstractControleur {
 
     private void afficherRecapitulatifCommande() {
         System.out.println("\n=== Récapitulatif de la commande ===");
-        System.out.println("Menu : " + commandeEnCours.getMenu().getNom());
-        commandeEnCours.getMenu().getElements().forEach(element ->
-                System.out.println("- " + element.getNom() +
-                        String.format(" (%.2f€)", element.getPrix())));
+        MenuComponent menu = commandeEnCours.getMenu();
 
-        if (commandeEnCours.getModeLivraison() == Commande.ModeLivraison.LIVRAISON) {
-            System.out.println("Livraison à : " + commandeEnCours.getAdresseLivraison());
+        // Afficher le menu de base
+        System.out.println("Menu : " + menu.getNom());
+
+        // Calculer le prix de base du menu (Pattern Composite)
+        double prixBase = 0.0;
+        System.out.println("Éléments de base :");
+        for (MenuComponent element : menu.getElements()) {
+            if (!(element instanceof PlatDecore)) {
+                System.out.printf("- %s (%.2f€)%n", element.getNom(), element.getPrix());
+                prixBase += element.getPrix();
+            }
         }
 
-        System.out.printf("Total à payer : %.2f€%n", commandeEnCours.getTotal());
+        // Calculer et afficher les suppléments (Pattern Decorator)
+        double prixSupplements = 0.0;
+        if (menu instanceof PlatDecore) {
+            System.out.println("Supplements ajoutés :");
+            PlatDecore platDecore = (PlatDecore) menu;
+            List<OptionSupplement> supplements = new ArrayList<>();
+            MenuComponent current = menu;
+
+            while (current instanceof PlatDecore) {
+                if (current instanceof OptionSupplement) {
+                    supplements.add((OptionSupplement) current);
+                }
+                current = ((PlatDecore) current).getPlatDeBase();
+            }
+
+            for (OptionSupplement supplement : supplements) {
+                System.out.printf("- %s (%s) (+%.2f€)%n",
+                        supplement.getNomSupplement(),
+                        supplement.getTypeSupplement().getLibelle(),
+                        supplement.getPrixSupplementaire());
+                prixSupplements += supplement.getPrixSupplementaire();
+            }
+        }
+
+        // Calculer le prix total avant réductions
+        double totalAvantReductions = prixBase + prixSupplements;
+
+        // Afficher les réductions appliquées
+        System.out.println("Réductions appliquées :");
+        System.out.printf("Prix initial : %.2f€%n", totalAvantReductions);
+
+        // Calculer les réductions
+        double reductionPourcentage = 0.0;
+        if (commandeEnCours.getClient() instanceof Client &&
+                ((Client) commandeEnCours.getClient()).estEtudiant()) {
+            reductionPourcentage = 0.15; // 15% de réduction étudiant
+            System.out.println("- Réduction étudiant (-15%)");
+        }
+
+        // Calculer le total final
+        double totalFinal = totalAvantReductions * (1 - reductionPourcentage);
+
+        // Afficher le mode de livraison si applicable
+        if (commandeEnCours.getModeLivraison() == Commande.ModeLivraison.LIVRAISON) {
+            System.out.println("\n📍 Livraison à : " + commandeEnCours.getAdresseLivraison());
+        }
+
+        System.out.printf("💰 Total final à payer : %.2f€%n", totalFinal);
+
+        // Mettre à jour le total de la commande
+        commandeEnCours.setTotal(totalFinal);
     }
 
     private int lireEntier(String message, int min, int max) {
@@ -342,8 +496,10 @@ public class ControleurClient extends AbstractControleur {
         System.out.println("5. Retour");
 
         int choix = lireEntier("Que souhaitez-vous modifier", 1, 5);
-        if (choix == 5) return;
-
+        if (choix == 5) {
+            gererProfil();
+            return;
+        }
         try {
             switch (choix) {
                 case 1:
@@ -449,12 +605,28 @@ public class ControleurClient extends AbstractControleur {
         double montant = lireDouble("Montant", 0.0);
 
         try {
-            // afficherFormulairePaiement();
-            client.rechargerSoldeIzly(montant);
-            System.out.println("✅ Solde rechargé avec succès");
-        } catch (IllegalArgumentException e) {
+            // Simuler un paiement par carte
+            System.out.println("\nPaiement par carte requis pour recharger IZLY");
+            System.out.print("Numéro de carte : ");
+            String numeroCarte = scanner.nextLine();
+            System.out.print("Date d'expiration (MM/YY) : ");
+            String dateExpiration = scanner.nextLine();
+            System.out.print("CVV : ");
+            String cvv = scanner.nextLine();
+
+            // Créer et utiliser la stratégie de paiement
+            StrategyPaiement strategie = new PaiementCarteBancaire(numeroCarte, dateExpiration, cvv);
+            try {
+                strategie.payer(montant);
+                client.rechargerSoldeIzly(montant);
+                System.out.println("✅ Solde IZLY rechargé avec succès");
+            } catch (IllegalStateException e) {
+                System.out.println("⚠️ Échec du paiement : " + e.getMessage());
+            }
+        } catch (Exception e) {
             System.out.println("⚠️ " + e.getMessage());
         }
+
         attendreTouche();
         gererProfil();
     }

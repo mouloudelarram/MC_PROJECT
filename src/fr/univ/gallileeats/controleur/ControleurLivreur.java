@@ -101,7 +101,6 @@ public class ControleurLivreur extends AbstractControleur {
 
         if (commandes.isEmpty()) {
             System.out.println("\nAucune commande à livrer.");
-
             attendreTouche();
             vue.afficher();
             return;
@@ -112,7 +111,6 @@ public class ControleurLivreur extends AbstractControleur {
         try {
             int choix = Integer.parseInt(scanner.nextLine());
             if (choix == 0) {
-                attendreTouche();
                 vue.afficher();
                 return;
             }
@@ -121,25 +119,25 @@ public class ControleurLivreur extends AbstractControleur {
                 Commande commande = commandes.get(choix - 1);
                 ((VueLivreur)vue).afficherConfirmationLivraison(commande);
 
+                System.out.print("Votre choix (1: Livrer, 2: Problème, 3: Annuler) : ");
                 String confirmation = scanner.nextLine();
                 switch (confirmation) {
-                    case "1": // Livraison réussie
+                    case "1":
                         livreur.terminerLivraison(commande);
-                        System.out.println("\n✅ Commande marquée comme livrée avec succès !");
+                        System.out.println("\n✅ Commande livrée avec succès !");
                         break;
-
-                    case "2": // Problème de livraison
+                    case "2":
                         System.out.print("\nDétails du problème : ");
                         String commentaire = scanner.nextLine();
                         livreur.signalerProblemeLivraison(commande, commentaire);
-                        System.out.println("\n⚠️ Problème de livraison enregistré");
+                        System.out.println("\n⚠️ Problème signalé");
                         break;
                 }
             }
         } catch (NumberFormatException e) {
-            System.out.println("\nNuméro de commande invalide");
-        } catch (IllegalStateException e) {
-            System.out.println("\nErreur : " + e.getMessage());
+            System.out.println("\n⚠️ Choix invalide");
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            System.out.println("\n⚠️ Erreur : " + e.getMessage());
         }
 
         attendreTouche();
