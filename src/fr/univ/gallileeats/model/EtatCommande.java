@@ -5,19 +5,19 @@ public enum EtatCommande {
     NOUVELLE("Nouvelle commande", "La commande vient d'être créée") {
         @Override
         public boolean peutPasserA(EtatCommande nouvelEtat) {
-            return nouvelEtat == EN_PREPARATION;
+            return nouvelEtat == EN_PREPARATION || nouvelEtat == ANNULEE;
         }
     },
     EN_PREPARATION("En préparation", "La commande est en cours de préparation") {
         @Override
         public boolean peutPasserA(EtatCommande nouvelEtat) {
-            return nouvelEtat == PRETE;
+            return nouvelEtat == PRETE || nouvelEtat == ANNULEE;
         }
     },
     PRETE("Prête", "La commande est prête") {
         @Override
         public boolean peutPasserA(EtatCommande nouvelEtat) {
-            return nouvelEtat == EN_LIVRAISON || nouvelEtat == SERVIE;
+            return nouvelEtat == EN_LIVRAISON || nouvelEtat == SERVIE || nouvelEtat == ANNULEE;
         }
     },
     EN_LIVRAISON("En livraison", "La commande est en cours de livraison") {

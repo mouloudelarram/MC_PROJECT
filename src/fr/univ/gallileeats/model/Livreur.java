@@ -127,12 +127,22 @@ public class Livreur extends Utilisateur implements Observateur {
             throw new IllegalArgumentException("Une raison doit être fournie");
         }
 
-        commande.setCommentaires("Problème de livraison: " + raison);
-        commandesALivrer.remove(commande);
-        commande.changerEtat(EtatCommande.ANNULEE);
-
-        updateDisponibilite();
-        updateTempsEstimation();
+        try {
+            commande.setCommentaires("Problème de livraison: " + raison);
+            commande.changerEtat(EtatCommande.ANNULEE);
+            commandesALivrer.remove(commande);
+            updateDisponibilite();
+        } catch (IllegalStateException e) {
+            // Réessayer en passant d'abord à EN_LIVRAISON si la commande est PRETE
+            if (commande.getEtat() == EtatCommande.PRETE) {
+                commande.changerEtat(EtatCommande.EN_LIVRAISON);
+                commande.changerEtat(EtatCommande.ANNULEE);
+                commandesALivrer.remove(commande);
+                updateDisponibilite();
+            } else {
+                throw e;
+            }
+        }
     }
 
     private void updateStatut() {

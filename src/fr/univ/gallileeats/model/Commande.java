@@ -173,20 +173,15 @@ public class Commande implements Sujet {
     }
 
     // Gestion des états
-    @Override
     public void changerEtat(EtatCommande nouvelEtat) {
         if (nouvelEtat == null) {
             throw new IllegalArgumentException("Le nouvel état ne peut pas être null");
         }
 
         if (this.etat == null) {
-            // Premier changement d'état
-            if (nouvelEtat != EtatCommande.NOUVELLE) {
-                throw new IllegalStateException("La première état doit être NOUVELLE");
-            }
             this.etat = nouvelEtat;
             ajouterEvenementHistorique("État initial: " + nouvelEtat.getLibelle());
-            notifierCuisiniers();
+            notifierObservateurs();
             return;
         }
 
@@ -197,10 +192,22 @@ public class Commande implements Sujet {
             );
         }
 
-        validerTransition(nouvelEtat);
+        // Vérifications spécifiques avant le changement d'état
+        if (nouvelEtat == EtatCommande.ANNULEE) {
+            // Permettre l'annulation depuis n'importe quel état non final
+            if (this.etat != EtatCommande.LIVREE &&
+                    this.etat != EtatCommande.SERVIE) {
+                this.etat = nouvelEtat;
+                ajouterEvenementHistorique("Commande annulée: " + nouvelEtat.getLibelle());
+                notifierObservateurs();
+                return;
+            }
+        }
+
+        // Reste de la logique de changement d'état
         this.etat = nouvelEtat;
         ajouterEvenementHistorique("État changé: " + nouvelEtat.getLibelle());
-        notifierSelonEtat(nouvelEtat);
+        notifierObservateurs();
     }
 
     private void validerTransition(EtatCommande nouvelEtat) {
