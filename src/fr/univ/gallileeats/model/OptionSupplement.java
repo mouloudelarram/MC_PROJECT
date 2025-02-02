@@ -66,12 +66,12 @@ public class OptionSupplement extends PlatDecore {
     }
 
     @Override
-    protected String getDescriptionDecoration() {
+    public String getDescriptionDecoration() {
         return String.format("%s (%s)", nomSupplement, typeSupplement.getLibelle());
     }
 
     @Override
-    protected double getPrixSupplementaire() {
+    public double getPrixSupplementaire() {
         return prixSupplement * quantite;
     }
 

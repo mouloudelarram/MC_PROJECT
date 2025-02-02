@@ -9,6 +9,9 @@ import java.util.Date;
 
 public class Commande implements Sujet {
     // Compteur statique pour générer les numéros de commande
+
+    private List<String> reductionsAppliquees;
+    private double totalAvantReductions;
     private static int compteur = 0;
 
     // Attributs de base
@@ -65,6 +68,8 @@ public class Commande implements Sujet {
         this.dateCommande = new Date();
         this.historique = new ArrayList<>();
         this.estPaye = false;
+        this.reductionsAppliquees = new ArrayList<>();
+        this.totalAvantReductions = 0.0;
 
         // Gestion de l'adresse selon le mode de livraison
         if (modeLivraison == ModeLivraison.LIVRAISON && client instanceof Client) {
@@ -114,8 +119,16 @@ public class Commande implements Sujet {
 
     // Calcul du total
     public void calculerTotal() {
-        // Prix de base selon le menu
-        this.total = menu.getPrix() * nombrePersonnes;
+        // Prix de base selon le menu et le nombre de personnes
+        this.total = 0.0;
+
+        // Ajouter le prix de chaque élément du menu
+        for (MenuComponent element : menu.getElements()) {
+            this.total += element.getPrix();
+        }
+
+        // Multiplier par le nombre de personnes
+        this.total *= nombrePersonnes;
 
         // Réductions selon le type de client et la taille de la commande
         appliquerReductions();
@@ -127,16 +140,18 @@ public class Commande implements Sujet {
     }
 
     private void appliquerReductions() {
+        this.totalAvantReductions = this.total;
+
         // Réduction pour les grandes commandes
         if (nombrePersonnes >= 20) {
             total *= 0.9; // 10% de réduction
-            ajouterEvenementHistorique("Réduction de 10% appliquée (commande groupe)");
+            reductionsAppliquees.add("Réduction groupe (-10%)");
         }
 
         // Réduction étudiant
         if (client instanceof Client && ((Client) client).estEtudiant()) {
             total *= 0.85; // 15% de réduction
-            ajouterEvenementHistorique("Réduction étudiant de 15% appliquée");
+            reductionsAppliquees.add("Réduction étudiant (-15%)");
         }
     }
 
@@ -250,6 +265,13 @@ public class Commande implements Sujet {
     }
 
     // Getters
+    public double getTotalAvantReductions() {
+        return totalAvantReductions;
+    }
+
+    public List<String> getReductionsAppliquees() {
+        return new ArrayList<>(reductionsAppliquees);
+    }
     public String getNumeroCommande() { return numeroCommande; }
     public Utilisateur getClient() { return client; }
     public MenuComponent getMenu() { return menu; }
@@ -265,8 +287,18 @@ public class Commande implements Sujet {
     public boolean estPayee() { return estPaye; }
     public String getEvenement() { return evenement; }
     public List<String> getHistorique() { return new ArrayList<>(historique); }
+    private double getReductionPourcentage() {
+        if (this.client instanceof Client && ((Client) this.client).estEtudiant()) {
+            return 0.15; // 15% de réduction étudiant
+        }
+        return 0.0;
+    }
 
     // Setters avec validation
+    public void setTotal(double total) {
+        this.total = total;
+        this.totalAvantReductions = total / (1 - getReductionPourcentage());
+    }
     public void setAdresseLivraison(String adresseLivraison) {
         if (modeLivraison == ModeLivraison.LIVRAISON &&
                 (adresseLivraison == null || adresseLivraison.trim().isEmpty())) {
