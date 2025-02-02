@@ -82,7 +82,7 @@ public class ControleurCuisinier extends AbstractControleur {
         System.out.print("Numéro de la commande à préparer : ");
         String numeroCommande = scanner.nextLine();
 
-        List<Commande> commandesEnAttente = trouverCommandesParEtat(EtatCommande.EN_PREPARATION);
+        List<Commande> commandesEnAttente = trouverCommandesParEtat(EtatCommande.NOUVELLE);  // Changed from EN_PREPARATION
         Commande commande = trouverCommandeParNumero(commandesEnAttente, numeroCommande);
 
         if (commande != null) {

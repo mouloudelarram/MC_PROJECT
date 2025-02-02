@@ -128,25 +128,16 @@ public class ControleurClient extends AbstractControleur {
             afficherRecapitulatifCommande();
 
             if (confirmerAction("Confirmer la commande ?")) {
-                // Gestion du paiement (Pattern Strategy)
                 afficherFormulairePaiement();
 
                 if (commandeEnCours.estPayee()) {
-                    // Ajout de l'observateur client
                     commandeEnCours.ajouterObservateur(client);
-
-                    // Initialiser l'état (Pattern State)
-                    commandeEnCours.changerEtat(EtatCommande.NOUVELLE);
-
-                    // Ajouter la commande au client
+                    commandeEnCours.changerEtat(EtatCommande.NOUVELLE);  // Start as NOUVELLE instead of EN_PREPARATION
                     client.ajouterCommande(commandeEnCours);
 
                     System.out.println("\n✅ Commande créée avec succès !");
                     System.out.println("Numéro de commande : " + commandeEnCours.getNumeroCommande());
                     System.out.printf("Total : %.2f€%n", commandeEnCours.getTotal());
-
-                    // Passage à la préparation
-                    commandeEnCours.changerEtat(EtatCommande.EN_PREPARATION);
                 }
             }
 

@@ -53,8 +53,7 @@ public class Cuisinier extends Utilisateur implements Observateur {
 
     public List<Commande> getCommandesEnAttente() {
         return commandesEnCours.stream()
-                .filter(c -> c.getEtat() == EtatCommande.NOUVELLE ||
-                        c.getEtat() == EtatCommande.EN_PREPARATION)
+                .filter(c -> c.getEtat() == EtatCommande.NOUVELLE)
                 .collect(Collectors.toList());
     }
 
