@@ -3,9 +3,14 @@ package fr.univ.gallileeats.vue;
 import fr.univ.gallileeats.interfaces.IControleur;
 import fr.univ.gallileeats.interfaces.IVueAdmin;
 import fr.univ.gallileeats.model.*;
+
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Vue dédiée à l'administration de l'application GALILEE EATS.
+ * Permet la gestion du menu, des commandes, des utilisateurs et des statistiques.
+ */
 public class VueAdmin extends AbstractVue implements IVueAdmin {
     private Administrateur admin;
     private static final String[] OPTIONS_MENU = {
@@ -43,19 +48,19 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
             "Retour"
     };
 
-    private static final String[] OPTIONS_STATISTIQUES = {
-            "Statistiques générales",
-            "Statistiques par type d'utilisateur",
-            "Statistiques des menus",
-            "Statistiques des paiements",
-            "Retour"
-    };
-
+    /**
+     * Constructeur de VueAdmin.
+     *
+     * @param controleur Le contrôleur associé à cette vue.
+     */
     public VueAdmin(IControleur controleur) {
         super(controleur);
         this.admin = Administrateur.getInstance();
     }
 
+    /**
+     * Affiche la vue de l'administration avec le menu et les notifications.
+     */
     @Override
     public void afficher() {
         effacerEcran();
@@ -65,6 +70,9 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         traiterChoix();
     }
 
+    /**
+     * Affiche l'en-tête avec les informations de l'administrateur.
+     */
     private void afficherEntete() {
         System.out.println("╔════════════════════════════════════════════╗");
         System.out.println("║        Administration GALILEE EATS         ║");
@@ -73,17 +81,26 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         afficherSeparateur();
     }
 
+    /**
+     * Affiche le menu principal avec les options d'administration.
+     */
     private void afficherMenu() {
         for (int i = 0; i < OPTIONS_MENU.length; i++) {
             System.out.printf("%d. %s%n", (i + 1), OPTIONS_MENU[i]);
         }
     }
 
+    /**
+     * Gère l'entrée utilisateur pour sélectionner une action dans le menu.
+     */
     private void traiterChoix() {
         int choix = lireEntreeNumerique("\nVotre choix", 1, OPTIONS_MENU.length);
         controleur.traiterAction("ADMIN_" + choix);
     }
 
+    /**
+     * Affiche le menu de gestion du menu de restauration.
+     */
     @Override
     public void afficherGestionMenu() {
         effacerEcran();
@@ -96,6 +113,10 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         controleur.traiterAction("ADMIN_MENU_" + choix);
     }
 
+
+    /**
+     * Affiche le menu de gestion des utilisateurs.
+     */
     @Override
     public void afficherGestionUtilisateurs() {
         effacerEcran();
@@ -108,6 +129,10 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         controleur.traiterAction("ADMIN_USERS_" + choix);
     }
 
+
+    /**
+     * Affiche le formulaire permettant d'ajouter un nouveau plat.
+     */
     @Override
     public void afficherFormulaireAjoutPlat() {
         effacerEcran();
@@ -138,6 +163,12 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
                 typeMenu));
     }
 
+
+    /**
+     * Affiche le formulaire permettant de modifier un plat existant.
+     *
+     * @param plat Le plat à modifier.
+     */
     public void afficherFormulaireModificationPlat(MenuComponent plat) {
         effacerEcran();
         System.out.println("\n=== Modifier un plat ===");
@@ -148,7 +179,7 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         System.out.println("4. Retour");
 
         int choix = lireEntreeNumerique("\nVotre choix", 1, 4);
-        switch(choix) {
+        switch (choix) {
             case 1:
                 double nouveauPrix = lireEntreeDouble("Nouveau prix (€)", 0.0);
                 controleur.traiterAction("ADMIN_MODIF_PLAT_PRIX_" + plat.getNom() + "_" + nouveauPrix);
@@ -165,6 +196,9 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         }
     }
 
+    /**
+     * Affiche le formulaire de gestion des catégories de plats.
+     */
     public void afficherFormulaireGestionCategories() {
         effacerEcran();
         System.out.println("\n=== Gestion des Catégories ===");
@@ -174,6 +208,10 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         System.out.println("4. Retour");
     }
 
+
+    /**
+     * Affiche le formulaire de gestion des menus buffet.
+     */
     public void afficherFormulaireGestionBuffet() {
         effacerEcran();
         System.out.println("\n=== Gestion des Menus Buffet ===");
@@ -183,6 +221,9 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         System.out.println("4. Retour");
     }
 
+    /**
+     * Affiche le formulaire pour ajouter un utilisateur.
+     */
     public void afficherFormulaireAjoutUtilisateur() {
         effacerEcran();
         System.out.println("\n=== Ajouter un Utilisateur ===");
@@ -192,6 +233,12 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         System.out.println("4. Retour");
     }
 
+    /**
+     * Affiche la liste des utilisateurs d'un certain type.
+     *
+     * @param type         Le type d'utilisateur (client, livreur, responsable).
+     * @param utilisateurs La liste des utilisateurs à afficher.
+     */
     public void afficherListeUtilisateurs(String type, List<Utilisateur> utilisateurs) {
         //effacerEcran();
         if (utilisateurs.isEmpty()) {
@@ -205,6 +252,11 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         }
     }
 
+    /**
+     * Affiche les détails d'un utilisateur spécifique.
+     *
+     * @param user L'utilisateur à afficher.
+     */
     private void afficherUtilisateur(Utilisateur user) {
         // effacerEcran();
         System.out.println("\n🆔 ID: " + user.getId());
@@ -223,6 +275,11 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         afficherSeparateur();
     }
 
+    /**
+     * Affiche les détails spécifiques d'un client.
+     *
+     * @param client Le client dont les détails doivent être affichés.
+     */
     private void afficherDetailsClient(Client client) {
         // effacerEcran();
         System.out.println("🎓 Type: " + (client.estEtudiant() ? "Étudiant" : "Standard"));
@@ -231,6 +288,11 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         System.out.printf("🎯 Points fidélité: %.2f%n", client.getSoldePoints());
     }
 
+    /**
+     * Affiche les détails spécifiques d'un livreur.
+     *
+     * @param livreur Le livreur dont les détails doivent être affichés.
+     */
     private void afficherDetailsLivreur(Livreur livreur) {
         // effacerEcran();
         System.out.println("🚩 Zone: " + livreur.getZone());
@@ -239,6 +301,11 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         System.out.println("📦 Livraisons effectuées: " + livreur.getNombreLivraisonsEffectuees());
     }
 
+    /**
+     * Affiche les détails spécifiques d'un responsable de campus.
+     *
+     * @param resp Le responsable de campus dont les détails doivent être affichés.
+     */
     private void afficherDetailsResponsable(ResponsableCampus resp) {
         // effacerEcran();
         System.out.println("🏢 Département: " + resp.getDepartement());
@@ -246,6 +313,9 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         System.out.printf("💵 Budget disponible: %.2f€%n", resp.getBudgetDisponible());
     }
 
+    /**
+     * Affiche le menu de gestion des commandes.
+     */
     public void afficherGestionCommandes() {
         effacerEcran();
         System.out.println("\n=== Gestion des Commandes ===");
@@ -254,6 +324,9 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         }
     }
 
+    /**
+     * Affiche les statistiques globales de l'application.
+     */
     public void afficherStatistiquesGlobales() {
         effacerEcran();
         System.out.println("\n=== Statistiques Globales ===");
@@ -264,6 +337,11 @@ public class VueAdmin extends AbstractVue implements IVueAdmin {
         System.out.println("4. Retour");
     }
 
+    /**
+     * Met à jour l'affichage lorsqu'une commande ou un utilisateur est modifié.
+     *
+     * @param source L'objet source de l'événement (commande ou utilisateur).
+     */
     @Override
     public void actualiser(Object source) {
         if (source instanceof Commande) {

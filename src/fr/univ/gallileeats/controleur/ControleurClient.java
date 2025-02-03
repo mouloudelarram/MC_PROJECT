@@ -11,17 +11,29 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.Scanner;
 
+/**
+ * Contrôleur gérant les interactions entre le client et l'application.
+ * Permet au client de passer des commandes, gérer son profil et suivre ses commandes.
+ */
 public class ControleurClient extends AbstractControleur {
     private ControleurPrincipal controleurPrincipal;
     private Scanner scanner;
     private Commande commandeEnCours;
 
+    /**
+     * Constructeur du contrôleur client.
+     *
+     * @param controleurPrincipal Instance du contrôleur principal.
+     */
     public ControleurClient(ControleurPrincipal controleurPrincipal) {
         super();
         this.controleurPrincipal = controleurPrincipal;
         this.scanner = new Scanner(System.in);
     }
 
+    /**
+     * Initialise les gestionnaires d'actions pour les différentes fonctionnalités du client.
+     */
     @Override
     protected void initialiserActionHandlers() {
         actionHandlers.put("1", params -> creerNouvelleCommande());
@@ -44,6 +56,10 @@ public class ControleurClient extends AbstractControleur {
 
     }
 
+    /**
+     * Gère l'exécution des actions en fonction de la demande de l'utilisateur.
+     * @param action L'action à traiter.
+     */
     @Override
     public void traiterAction(String action) {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
@@ -68,6 +84,9 @@ public class ControleurClient extends AbstractControleur {
         }
     }
 
+    /**
+     * Permet au client de créer une nouvelle commande en sélectionnant un menu et un mode de livraison.
+     */
     private void creerNouvelleCommande() {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
 
@@ -148,6 +167,11 @@ public class ControleurClient extends AbstractControleur {
         attendreTouche();
         vue.afficher();
     }
+
+    /**
+     * Ajoute une sauce supplémentaire au menu sélectionné.
+     * @param menu Le menu auquel ajouter une sauce.
+     */
     private MenuComponent ajouterSauceSupplementaire(MenuComponent menu) {
         System.out.println("\nSauces disponibles :");
         System.out.println("1. Sauce BBQ (+0.50€)");
@@ -178,6 +202,10 @@ public class ControleurClient extends AbstractControleur {
         }
     }
 
+    /**
+     * Ajoute une portion supplémentaire au menu sélectionné.
+     * @param menu Le menu auquel ajouter une portion.
+     */
     private MenuComponent ajouterPortionSupplementaire(MenuComponent menu) {
         System.out.println("\nPortions supplémentaires disponibles :");
         System.out.println("1. Double portion de viande/poisson (+4.00€)");
@@ -208,8 +236,10 @@ public class ControleurClient extends AbstractControleur {
         }
     }
 
-    // Mise à jour de la méthode ajouterOptionsSupplementaires pour une meilleure gestion des erreurs
-    private void ajouterOptionsSupplementaires(Menu menu) {
+    /**
+     * Ajoute des options supplémentaires à une commande (ingrédients, sauces, portions).
+     * @param menu Le menu auquel ajouter les options.
+     */    private void ajouterOptionsSupplementaires(Menu menu) {
         MenuComponent menuModifie = commandeEnCours.getMenu();
 
         while (confirmerAction("\nVoulez-vous ajouter des options supplémentaires ?")) {
@@ -244,6 +274,10 @@ public class ControleurClient extends AbstractControleur {
         }
     }
 
+    /**
+     * Ajoute un ingrédient supplémentaire au menu sélectionné.
+     * @param menu Le menu auquel ajouter l'ingrédient.
+     */
     private MenuComponent ajouterIngredientSupplementaire(MenuComponent menu) {
         System.out.println("\nIngrédients disponibles :");
         System.out.println("1. Fromage (+1.00€)");
@@ -266,6 +300,9 @@ public class ControleurClient extends AbstractControleur {
         }
     }
 
+    /**
+     * Affiche et gère les commandes en cours du client.
+     */
     @Override
     public void gererCommandes() {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
@@ -296,11 +333,14 @@ public class ControleurClient extends AbstractControleur {
         traiterAction("CMD_" + choix);
     }
 
+    /**
+     * Affiche le formulaire permettant au client de choisir son mode de paiement.
+     */
     @Override
     public void afficherFormulairePaiement() {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
 
-        ((VueClient)vue).afficherFormulairePaiement();
+        ((VueClient) vue).afficherFormulairePaiement();
 
         int choix = lireEntier("Votre choix", 1, 3);
 
@@ -323,6 +363,9 @@ public class ControleurClient extends AbstractControleur {
         }
     }
 
+    /**
+     * Traite le paiement par carte bancaire.
+     */
     private void traiterPaiementCarte() {
         System.out.print("Numéro de carte : ");
         String numeroCarte = scanner.nextLine();
@@ -338,6 +381,9 @@ public class ControleurClient extends AbstractControleur {
         commandeEnCours.payer();
     }
 
+    /**
+     * Traite le paiement via le solde Izly du client.
+     */
     private void traiterPaiementIzly() {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
 
@@ -354,6 +400,9 @@ public class ControleurClient extends AbstractControleur {
         client.debiterSoldeIzly(commandeEnCours.getTotal());
     }
 
+    /**
+     * Traite le paiement en espèces.
+     */
     private void traiterPaiementEspeces() {
         System.out.printf("Montant à payer : %.2f€%n", commandeEnCours.getTotal());
         double montant = lireDouble("Montant fourni", commandeEnCours.getTotal());
@@ -363,6 +412,9 @@ public class ControleurClient extends AbstractControleur {
         commandeEnCours.payer();
     }
 
+    /**
+     * Affiche un récapitulatif détaillé de la commande avant confirmation.
+     */
     private void afficherRecapitulatifCommande() {
         System.out.println("\n=== Récapitulatif de la commande ===");
         MenuComponent menu = commandeEnCours.getMenu();
@@ -433,6 +485,12 @@ public class ControleurClient extends AbstractControleur {
         commandeEnCours.setTotal(totalFinal);
     }
 
+    /**
+     * Permet de lire un entier depuis l'entrée utilisateur dans une plage donnée.
+     * @param message Message affiché à l'utilisateur.
+     * @param min Valeur minimale acceptable.
+     * @param max Valeur maximale acceptable.
+     */
     private int lireEntier(String message, int min, int max) {
         while (true) {
             System.out.printf("%s (%d-%d) : ", message, min, max);
@@ -448,6 +506,11 @@ public class ControleurClient extends AbstractControleur {
         }
     }
 
+    /**
+     * Permet de lire un double depuis l'entrée utilisateur avec une valeur minimale.
+     * @param message Message affiché à l'utilisateur.
+     * @param min Valeur minimale acceptable.
+     */
     private double lireDouble(String message, double min) {
         while (true) {
             System.out.printf("%s (min. %.2f€) : ", message, min);
@@ -463,12 +526,18 @@ public class ControleurClient extends AbstractControleur {
         }
     }
 
+    /**
+     * Demande une confirmation utilisateur sous forme de oui/non.
+     * @param message Message affiché à l'utilisateur.
+     */
     private boolean confirmerAction(String message) {
         System.out.print(message + " (oui/non) : ");
         return scanner.nextLine().trim().equalsIgnoreCase("oui");
     }
 
-    // Méthodes de gestion du profil
+    /**
+     * Permet au client de gérer ses informations personnelles et préférences.
+     */
     private void gererProfil() {
         System.out.println("\n=== Gestion du Profil ===");
         System.out.println("1. Modifier informations personnelles");
@@ -484,6 +553,10 @@ public class ControleurClient extends AbstractControleur {
             vue.afficher();
         }
     }
+
+    /**
+     * Permet au client de modifier ses informations personnelles.
+     */
 
     private void modifierInformationsPersonnelles() {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
@@ -527,6 +600,9 @@ public class ControleurClient extends AbstractControleur {
         gererProfil();
     }
 
+    /**
+     * Permet au client de gérer ses préférences alimentaires.
+     */
     private void gererPreferences() {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
         System.out.println("\n=== Gérer Préférences Alimentaires ===");
@@ -562,6 +638,9 @@ public class ControleurClient extends AbstractControleur {
         gererProfil();
     }
 
+    /**
+     * Permet au client de gérer ses allergies.
+     */
     private void gererAllergies() {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
         System.out.println("\n=== Gérer Allergies ===");
@@ -597,6 +676,9 @@ public class ControleurClient extends AbstractControleur {
         gererProfil();
     }
 
+    /**
+     * Permet au client de recharger son solde Izly.
+     */
     private void rechargerSoldeIzly() {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
         System.out.println("\n=== Recharger Solde IZLY ===");
@@ -631,6 +713,9 @@ public class ControleurClient extends AbstractControleur {
         gererProfil();
     }
 
+    /**
+     * Affiche l'historique des commandes du client.
+     */
     private void afficherHistorique() {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
         List<Commande> commandes = client.getCommandes();
@@ -659,6 +744,9 @@ public class ControleurClient extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Permet au client de modifier une commande en cours.
+     */
     private void modifierCommande() {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
         List<Commande> commandes = client.getCommandesEnCours();
@@ -692,6 +780,10 @@ public class ControleurClient extends AbstractControleur {
         }
     }
 
+    /**
+     * Permet au client de modifier le mode de livraison d'une commande.
+     * @param commande La commande à modifier.
+     */
     private void modifierModeLivraison(Commande commande) {
         System.out.println("\nMode de livraison actuel : " + commande.getModeLivraison().getLibelle());
         System.out.println("1. Livraison à domicile");
@@ -701,6 +793,10 @@ public class ControleurClient extends AbstractControleur {
         // Implementation de la modification
     }
 
+    /**
+     * Permet au client de modifier l'adresse de livraison d'une commande.
+     * @param commande La commande à modifier.
+     */
     private void modifierAdresseLivraison(Commande commande) {
         if (commande.getModeLivraison() != Commande.ModeLivraison.LIVRAISON) {
             System.out.println("⚠️ Cette commande n'est pas en livraison");
@@ -714,6 +810,9 @@ public class ControleurClient extends AbstractControleur {
         System.out.println("✅ Adresse modifiée");
     }
 
+    /**
+     * Permet au client d'annuler une commande en cours.
+     */
     private void annulerCommande() {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
         List<Commande> commandes = client.getCommandesEnCours();
@@ -736,6 +835,9 @@ public class ControleurClient extends AbstractControleur {
         }
     }
 
+    /**
+     * Permet au client de suivre l'état d'une commande en cours.
+     */
     private void suivreCommande() {
         Client client = (Client) controleurPrincipal.getUtilisateurConnecte("CLIENT");
         List<Commande> commandes = client.getCommandesEnCours();
@@ -764,6 +866,9 @@ public class ControleurClient extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Retourne au menu principal de l'application.
+     */
     @Override
     public void retourMenuPrincipal() {
         controleurPrincipal.afficherVuePrincipale();

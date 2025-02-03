@@ -3,8 +3,13 @@ package fr.univ.gallileeats.vue;
 import fr.univ.gallileeats.interfaces.IControleur;
 import fr.univ.gallileeats.interfaces.IVueResponsable;
 import fr.univ.gallileeats.model.*;
+
 import java.util.List;
 
+/**
+ * Vue dédiée au responsable de campus permettant de gérer les commandes groupées pour des événements,
+ * d'afficher les commandes en cours, de consulter l'historique et de gérer le budget disponible.
+ */
 public class VueResponsableCampus extends AbstractVue implements IVueResponsable {
     private ResponsableCampus responsable;
     private static final String[] OPTIONS_MENU = {
@@ -15,6 +20,13 @@ public class VueResponsableCampus extends AbstractVue implements IVueResponsable
             "Retour au menu principal"
     };
 
+    /**
+     * Constructeur de VueResponsableCampus.
+     *
+     * @param controleur  Le contrôleur associé à cette vue.
+     * @param responsable L'instance du responsable de campus utilisant la vue.
+     * @throws IllegalArgumentException si le responsable est null.
+     */
     public VueResponsableCampus(IControleur controleur, ResponsableCampus responsable) {
         super(controleur);
         if (responsable == null) {
@@ -23,6 +35,9 @@ public class VueResponsableCampus extends AbstractVue implements IVueResponsable
         this.responsable = responsable;
     }
 
+    /**
+     * Affiche la vue du responsable de campus, y compris le menu et les notifications.
+     */
     @Override
     public void afficher() {
         effacerEcran();
@@ -32,6 +47,9 @@ public class VueResponsableCampus extends AbstractVue implements IVueResponsable
         traiterChoix();
     }
 
+    /**
+     * Affiche l'en-tête avec les informations du responsable de campus.
+     */
     private void afficherEntete() {
         System.out.println("╔══════════════════════════════════════╗");
         System.out.printf("║  Responsable Campus - %s%n", responsable.getNom());
@@ -45,17 +63,26 @@ public class VueResponsableCampus extends AbstractVue implements IVueResponsable
         afficherSeparateur();
     }
 
+    /**
+     * Affiche le menu principal avec les options disponibles.
+     */
     private void afficherMenu() {
         for (int i = 0; i < OPTIONS_MENU.length; i++) {
             System.out.printf("%d. %s%n", (i + 1), OPTIONS_MENU[i]);
         }
     }
 
+    /**
+     * Gère l'entrée utilisateur pour sélectionner une action dans le menu.
+     */
     private void traiterChoix() {
         int choix = lireEntreeNumerique("\nVotre choix", 1, OPTIONS_MENU.length);
         controleur.traiterAction("RESPONSABLE_" + choix);
     }
 
+    /**
+     * Affiche un formulaire pour commander un repas pour un événement.
+     */
     public void afficherFormulaireCommandeEvenement() {
         System.out.println("\n=== Nouvelle Commande pour Événement ===");
         System.out.printf("💰 Budget disponible : %.2f€%n", responsable.getBudgetDisponible());
@@ -79,6 +106,9 @@ public class VueResponsableCampus extends AbstractVue implements IVueResponsable
                 evenement.replace(" ", "_"), nombrePersonnes));
     }
 
+    /**
+     * Affiche la liste des commandes groupées en cours.
+     */
     public void afficherCommandesGroupees() {
         List<Commande> commandes = responsable.getCommandesGroupees();
         if (commandes.isEmpty()) {
@@ -92,6 +122,10 @@ public class VueResponsableCampus extends AbstractVue implements IVueResponsable
         }
     }
 
+    /**
+     * Affiche les détails d'une commande groupée spécifique.
+     * @param commande La commande à afficher.
+     */
     private void afficherCommandeGroupee(Commande commande) {
         System.out.println("\n🔖 Commande n°" + commande.getNumeroCommande());
         System.out.println("🎉 Événement : " + commande.getEvenement());
@@ -109,6 +143,9 @@ public class VueResponsableCampus extends AbstractVue implements IVueResponsable
         afficherSeparateur();
     }
 
+    /**
+     * Affiche les informations sur la gestion du budget du responsable de campus.
+     */
     public void afficherGestionBudget() {
         System.out.println("\n=== Gestion du Budget ===");
         System.out.printf("💰 Budget initial : %.2f€%n", responsable.getBudgetInitial());
@@ -122,6 +159,10 @@ public class VueResponsableCampus extends AbstractVue implements IVueResponsable
         afficherSeparateur();
     }
 
+    /**
+     * Met à jour l'affichage lorsqu'une commande change d'état.
+     * @param source L'objet source de l'événement (généralement une commande).
+     */
     @Override
     public void actualiser(Object source) {
         if (source instanceof Commande) {

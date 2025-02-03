@@ -5,16 +5,28 @@ import fr.univ.gallileeats.vue.*;
 import java.util.*;
 import java.util.function.Consumer;
 
+/**
+ * Contrôleur gérant les interactions entre le responsable de campus et l'application.
+ * Permet la gestion des commandes groupées pour les événements et du budget alloué.
+ */
 public class ControleurResponsable extends AbstractControleur {
     private ControleurPrincipal controleurPrincipal;
     private Map<String, Double> budgetParEvenement;
 
+    /**
+     * Constructeur du contrôleur responsable.
+     * Initialise la gestion du budget par événement.
+     * @param controleurPrincipal Instance du contrôleur principal.
+     */
     public ControleurResponsable(ControleurPrincipal controleurPrincipal) {
         super();
         this.controleurPrincipal = controleurPrincipal;
         this.budgetParEvenement = new HashMap<>();
     }
 
+    /**
+     * Initialise les gestionnaires d'actions pour les différentes fonctionnalités du responsable.
+     */
     @Override
     protected void initialiserActionHandlers() {
         actionHandlers.put("1", params -> creerCommandeEvenement());
@@ -24,6 +36,10 @@ public class ControleurResponsable extends AbstractControleur {
         actionHandlers.put("5", params -> retourMenuPrincipal());
     }
 
+    /**
+     * Gère l'exécution des actions en fonction de la demande de l'utilisateur.
+     * @param action L'action à traiter.
+     */
     @Override
     public void traiterAction(String action) {
         ResponsableCampus responsable = (ResponsableCampus) controleurPrincipal.getUtilisateurConnecte("RESPONSABLE");
@@ -53,6 +69,9 @@ public class ControleurResponsable extends AbstractControleur {
         }
     }
 
+    /**
+     * Affiche la liste des commandes groupées en cours.
+     */
     @Override
     public void gererCommandes() {
         ResponsableCampus responsable = (ResponsableCampus) controleurPrincipal.getUtilisateurConnecte("RESPONSABLE");
@@ -61,6 +80,9 @@ public class ControleurResponsable extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Affiche les statistiques du département géré par le responsable.
+     */
     @Override
     public void afficherStatistiques() {
         ResponsableCampus responsable = (ResponsableCampus) controleurPrincipal.getUtilisateurConnecte("RESPONSABLE");
@@ -76,6 +98,9 @@ public class ControleurResponsable extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Affiche le profil du responsable de campus avec ses informations et le budget géré.
+     */
     @Override
     public void afficherEtatProfil() {
         ResponsableCampus responsable = (ResponsableCampus) controleurPrincipal.getUtilisateurConnecte("RESPONSABLE");
@@ -93,11 +118,17 @@ public class ControleurResponsable extends AbstractControleur {
         // Non utilisé pour le responsable campus
     }
 
+    /**
+     * Retourne au menu principal.
+     */
     @Override
     public void retourMenuPrincipal() {
         controleurPrincipal.afficherVuePrincipale();
     }
 
+    /**
+     * Permet au responsable de campus de créer une commande pour un événement.
+     */
     private void creerCommandeEvenement() {
         ResponsableCampus responsable = (ResponsableCampus) controleurPrincipal.getUtilisateurConnecte("RESPONSABLE");
         ((VueResponsableCampus)vue).afficherFormulaireCommandeEvenement();
@@ -105,6 +136,10 @@ public class ControleurResponsable extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Traite la création d'une commande pour un événement spécifique.
+     * @param params Paramètres contenant le nom de l'événement et le nombre de personnes.
+     */
     private void traiterCommandeEvenement(String[] params) {
         if (params.length < 2) return;
 
@@ -140,6 +175,12 @@ public class ControleurResponsable extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Crée un menu buffet pour un événement donné.
+     * @param nomEvenement Nom de l'événement.
+     * @param nombrePersonnes Nombre de personnes prévues pour l'événement.
+     * @return Un objet MenuBuffet configuré.
+     */
     private MenuBuffet creerMenuBuffet(String nomEvenement, int nombrePersonnes) {
         MenuBuffet menu = new MenuBuffet(
                 "Buffet " + nomEvenement,
@@ -185,6 +226,9 @@ public class ControleurResponsable extends AbstractControleur {
         return menu;
     }
 
+    /**
+     * Affiche l'historique des commandes groupées passées par le responsable.
+     */
     private void afficherHistorique() {
         ResponsableCampus responsable = (ResponsableCampus) controleurPrincipal.getUtilisateurConnecte("RESPONSABLE");
         List<Commande> commandes = responsable.getCommandesGroupees();
@@ -199,6 +243,10 @@ public class ControleurResponsable extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Affiche les détails d'une commande spécifique.
+     * @param commande La commande à afficher.
+     */
     private void afficherDetailsCommande(Commande commande) {
         System.out.println("\n🔖 Commande n°" + commande.getNumeroCommande());
         System.out.println("🎉 Événement: " + commande.getEvenement());
@@ -213,6 +261,9 @@ public class ControleurResponsable extends AbstractControleur {
         System.out.println("----------------------------------------");
     }
 
+    /**
+     * Permet au responsable de gérer le budget du département.
+     */
     private void gererBudget() {
         System.out.println("\n=== Gestion du Budget ===");
         System.out.println("1. Voir les dépenses par événement");
@@ -239,6 +290,10 @@ public class ControleurResponsable extends AbstractControleur {
         }
     }
 
+    /**
+     * Traite les différentes actions liées à la gestion du budget.
+     * @param params Paramètres contenant les détails de l'action.
+     */
     private void traiterGestionBudget(String[] params) {
         if (params.length < 1) return;
 
@@ -254,6 +309,9 @@ public class ControleurResponsable extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Affiche les dépenses par événement.
+     */
     private void afficherDepensesParEvenement() {
         if (budgetParEvenement.isEmpty()) {
             System.out.println("\nAucune dépense enregistrée.");
@@ -265,6 +323,9 @@ public class ControleurResponsable extends AbstractControleur {
                 System.out.printf("%s : %.2f€%n", evenement, montant));
     }
 
+    /**
+     * Affiche les statistiques financières des événements gérés.
+     */
     private void afficherStatistiquesEvenements() {
         if (!budgetParEvenement.isEmpty()) {
             System.out.println("\n📊 Statistiques des événements:");
@@ -274,6 +335,9 @@ public class ControleurResponsable extends AbstractControleur {
         }
     }
 
+    /**
+     * Permet au responsable de demander une augmentation de budget.
+     */
     private void demanderAugmentationBudget() {
         ResponsableCampus responsable = (ResponsableCampus) controleurPrincipal.getUtilisateurConnecte("RESPONSABLE");
         Scanner scanner = new Scanner(System.in);
@@ -296,6 +360,9 @@ public class ControleurResponsable extends AbstractControleur {
         }
     }
 
+    /**
+     * Affiche le budget restant du département.
+     */
     private void afficherBudgetRestant() {
         ResponsableCampus responsable = (ResponsableCampus) controleurPrincipal.getUtilisateurConnecte("RESPONSABLE");
         System.out.println("\n=== État du Budget ===");

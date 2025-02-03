@@ -11,6 +11,10 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+
+/**
+ * Contrôleur principal de l'application gérant la navigation entre les différents rôles et fonctionnalités.
+ */
 public class ControleurPrincipal extends AbstractControleur {
     private Map<String, IControleur> sousControleurs;
     private Map<String, Utilisateur> utilisateursConnectes;

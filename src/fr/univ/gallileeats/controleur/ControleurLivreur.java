@@ -6,16 +6,31 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
+/**
+ * Contrôleur gérant les interactions entre le livreur et l'application.
+ * Permet au livreur de voir les commandes à livrer, gérer sa disponibilité,
+ * consulter son historique de livraisons et afficher ses statistiques.
+ */
+
 public class ControleurLivreur extends AbstractControleur {
     private ControleurPrincipal controleurPrincipal;
     private Scanner scanner;
 
+
+    /**
+     * Constructeur du contrôleur livreur.
+     * @param controleurPrincipal Instance du contrôleur principal.
+     */
     public ControleurLivreur(ControleurPrincipal controleurPrincipal) {
         super();
         this.controleurPrincipal = controleurPrincipal;
         this.scanner = new Scanner(System.in);
     }
 
+
+    /**
+     * Initialise les gestionnaires d'actions pour les différentes fonctionnalités du livreur.
+     */
     @Override
     protected void initialiserActionHandlers() {
         actionHandlers.put("1", params -> voirCommandesALivrer());
@@ -26,6 +41,10 @@ public class ControleurLivreur extends AbstractControleur {
         actionHandlers.put("6", params -> retourMenuPrincipal());
     }
 
+    /**
+     * Gère l'exécution des actions en fonction de la demande de l'utilisateur.
+     * @param action L'action à traiter.
+     */
     @Override
     public void traiterAction(String action) {
         Livreur livreur = (Livreur) controleurPrincipal.getUtilisateurConnecte("LIVREUR");
@@ -45,16 +64,26 @@ public class ControleurLivreur extends AbstractControleur {
         }
     }
 
+
+    /**
+     * Affiche la vue principale du livreur.
+     */
     @Override
     public void afficherVuePrincipale() {
         controleurPrincipal.afficherVuePrincipale();
     }
 
+    /**
+     * Affiche les commandes à livrer du livreur.
+     */
     @Override
     public void gererCommandes() {
         voirCommandesALivrer();
     }
 
+    /**
+     * Affiche les statistiques du livreur.
+     */
     @Override
     public void afficherStatistiques() {
         Livreur livreur = (Livreur) controleurPrincipal.getUtilisateurConnecte("LIVREUR");
@@ -63,6 +92,9 @@ public class ControleurLivreur extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Affiche le profil du livreur avec ses informations personnelles et ses statistiques.
+     */
     @Override
     public void afficherEtatProfil() {
         Livreur livreur = (Livreur) controleurPrincipal.getUtilisateurConnecte("LIVREUR");
@@ -82,11 +114,18 @@ public class ControleurLivreur extends AbstractControleur {
         // Non utilisé pour le livreur
     }
 
+
+    /**
+     * Retourne au menu principal.
+     */
     @Override
     public void retourMenuPrincipal() {
         controleurPrincipal.afficherVuePrincipale();
     }
 
+    /**
+     * Affiche la liste des commandes disponibles à livrer.
+     */
     private void voirCommandesALivrer() {
         Livreur livreur = (Livreur) controleurPrincipal.getUtilisateurConnecte("LIVREUR");
         ((VueLivreur)vue).afficherCommandesALivrer();
@@ -95,6 +134,9 @@ public class ControleurLivreur extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Permet au livreur de marquer une commande comme livrée ou de signaler un problème de livraison.
+     */
     private void marquerCommandeLivree() {
         Livreur livreur = (Livreur) controleurPrincipal.getUtilisateurConnecte("LIVREUR");
         List<Commande> commandes = livreur.getCommandesALivrer();
@@ -144,6 +186,9 @@ public class ControleurLivreur extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Affiche l'historique des livraisons effectuées par le livreur.
+     */
     private void afficherHistorique() {
         Livreur livreur = (Livreur) controleurPrincipal.getUtilisateurConnecte("LIVREUR");
         List<Commande> historique = livreur.getHistoriqueLivraisons();
@@ -165,6 +210,9 @@ public class ControleurLivreur extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Permet au livreur de gérer sa disponibilité (disponible, indisponible, en pause).
+     */
     private void gererDisponibilite() {
         Livreur livreur = (Livreur) controleurPrincipal.getUtilisateurConnecte("LIVREUR");
 

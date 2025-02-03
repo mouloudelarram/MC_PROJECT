@@ -6,11 +6,20 @@ import fr.univ.gallileeats.vue.*;
 import java.util.*;
 import java.util.function.Consumer;
 
+/**
+ * Contrôleur gérant les interactions entre l'administrateur et l'application.
+ * Permet la gestion des menus, des utilisateurs, des commandes et des statistiques.
+ */
 public class ControleurAdmin extends AbstractControleur {
     private Map<String, List<MenuComponent>> menus;
     private Map<String, List<Utilisateur>> utilisateurs;
     private ControleurPrincipal controleurPrincipal;
 
+    /**
+     * Constructeur du contrôleur administrateur.
+     * Initialise les collections de menus et d'utilisateurs.
+     * @param controleurPrincipal Instance du contrôleur principal.
+     */
     public ControleurAdmin(ControleurPrincipal controleurPrincipal) {
         super();
         this.controleurPrincipal = controleurPrincipal;
@@ -28,6 +37,9 @@ public class ControleurAdmin extends AbstractControleur {
         //initialiserDonnees();
     }
 
+    /**
+     * Initialise les gestionnaires d'actions pour les différentes fonctionnalités de l'administrateur.
+     */
     @Override
     protected void initialiserActionHandlers() {
         // Menu principal
@@ -53,6 +65,10 @@ public class ControleurAdmin extends AbstractControleur {
         actionHandlers.put("USERS_5", params -> gererDroitsDacces());
     }
 
+    /**
+     * Gère l'exécution des actions en fonction de la demande de l'utilisateur.
+     * @param action L'action à traiter.
+     */
     @Override
     public void traiterAction(String action) {
         Administrateur admin = (Administrateur) controleurPrincipal.getUtilisateurConnecte("ADMIN");
@@ -72,11 +88,18 @@ public class ControleurAdmin extends AbstractControleur {
         }
     }
 
+    /**
+     * Affiche la vue principale de l'administrateur.
+     */
     @Override
     public void afficherVuePrincipale() {
         controleurPrincipal.afficherVuePrincipale();
     }
 
+
+    /**
+     * Permet à l'administrateur de gérer les commandes en cours et l'historique.
+     */
     @Override
     public void gererCommandes() {
         // effacer l'écran
@@ -100,6 +123,9 @@ public class ControleurAdmin extends AbstractControleur {
         }
     }
 
+    /**
+     * Affiche les statistiques générales de l'application.
+     */
     @Override
     public void afficherStatistiques() {
         System.out.println("\n=== Statistiques Globales ===");
@@ -120,6 +146,9 @@ public class ControleurAdmin extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Affiche le profil de l'administrateur.
+     */
     @Override
     public void afficherEtatProfil() {
         Administrateur admin = Administrateur.getInstance();
@@ -134,11 +163,17 @@ public class ControleurAdmin extends AbstractControleur {
         // Non utilisé pour l'administrateur
     }
 
+    /**
+     * Retourne au menu principal.
+     */
     @Override
     public void retourMenuPrincipal() {
         controleurPrincipal.afficherVuePrincipale();
     }
 
+    /**
+     * Initialise les collections de menus et d'utilisateurs avec des données par défaut.
+     */
     private void initialiserDonnees() {
         // Initialisation des menus
         menus.put("STANDARD", new ArrayList<>());
@@ -153,6 +188,9 @@ public class ControleurAdmin extends AbstractControleur {
         ajouterDonneesDemo();
     }
 
+    /**
+     * Ajoute des données de démonstration pour les menus et les utilisateurs.
+     */
     private void ajouterDonneesDemo() {
         // Ajout de menus de démonstration
         Menu menuJour = new Menu("Menu du Jour", "Menu complet équilibré", "STANDARD");
@@ -173,6 +211,9 @@ public class ControleurAdmin extends AbstractControleur {
         );
     }
 
+    /**
+     * Ajoute un plat au menu.
+     */
     private void ajouterPlat() {
         Scanner scanner = new Scanner(System.in);
         try {
@@ -208,6 +249,9 @@ public class ControleurAdmin extends AbstractControleur {
         ((VueAdmin)vue).afficherGestionMenu();
     }
 
+    /**
+     * Modifie un plat existant dans le menu.
+     */
     private void modifierPlat() {
         afficherTousLesPlats();
         Scanner scanner = new Scanner(System.in);
@@ -228,7 +272,6 @@ public class ControleurAdmin extends AbstractControleur {
                 case "1":
                     System.out.print("Nouveau prix : ");
                     double nouveauPrix = Double.parseDouble(scanner.nextLine());
-                    // Mise à jour du prix
                     System.out.println("✅ Prix mis à jour !");
                     break;
                 case "2":
@@ -251,6 +294,9 @@ public class ControleurAdmin extends AbstractControleur {
         ((VueAdmin)vue).afficherGestionMenu();
     }
 
+    /**
+     * Supprime un plat du menu.
+     */
     private void supprimerPlat() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("\nNom du plat à supprimer : ");
@@ -272,6 +318,9 @@ public class ControleurAdmin extends AbstractControleur {
         ((VueAdmin)vue).afficherGestionMenu();
     }
 
+    /**
+     * Gère la gestion des catégories de plats.
+     */
     private void gererCategories() {
         // effacer l'écran
         System.out.print("\033[H\033[2J");
@@ -309,6 +358,10 @@ public class ControleurAdmin extends AbstractControleur {
         ((VueAdmin)vue).afficherGestionMenu();
     }
 
+    /**
+     * Affiche la liste des utilisateurs selon leur type (client, livreur, responsable).
+     * @param type Le type d'utilisateur recherché.
+     */
     private void afficherListeUtilisateurs(String type) {
         List<Utilisateur> liste = utilisateurs.get(type);
         ((VueAdmin)vue).afficherListeUtilisateurs(type, liste);
@@ -317,6 +370,9 @@ public class ControleurAdmin extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Ajoute un nouvel utilisateur (client, livreur ou responsable).
+     */
     private void ajouterUtilisateur() {
         Scanner scanner = new Scanner(System.in);
         System.out.println("\n=== Ajouter un utilisateur ===");
@@ -372,6 +428,9 @@ public class ControleurAdmin extends AbstractControleur {
         ((VueAdmin)vue).afficherGestionUtilisateurs();
     }
 
+    /**
+     * Gère les droits d'accès des utilisateurs.
+     */
     private void gererDroitsDacces() {
         Scanner scanner = new Scanner(System.in);
         System.out.println("\n=== Gestion des droits d'accès ===");
@@ -421,6 +480,9 @@ public class ControleurAdmin extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Affiche la liste des commandes en cours.
+     */
     private void afficherCommandesEnCours() {
         System.out.println("\n=== Commandes en cours ===");
         for (List<Utilisateur> userList : utilisateurs.values()) {
@@ -444,6 +506,9 @@ public class ControleurAdmin extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Affiche l'historique des commandes.
+     */
     private void afficherHistoriqueCommandes() {
         System.out.println("\n=== Historique complet des commandes ===");
         for (List<Utilisateur> userList : utilisateurs.values()) {
@@ -463,6 +528,9 @@ public class ControleurAdmin extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Affiche la liste des commandes annulées.
+     */
     private void afficherCommandesAnnulees() {
         System.out.println("\n=== Commandes Annulées ===");
         for (List<Utilisateur> userList : utilisateurs.values()) {
@@ -480,6 +548,10 @@ public class ControleurAdmin extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Affiche les détails d'une commande spécifique.
+     * @param commande La commande à afficher.
+     */
     private void afficherDetailsCommande(Commande commande) {
         System.out.println("\n🔖 Commande n°" + commande.getNumeroCommande());
         System.out.println("👤 Client : " + commande.getClient().getNom());
@@ -498,6 +570,9 @@ public class ControleurAdmin extends AbstractControleur {
         System.out.println("----------------------------------------");
     }
 
+    /**
+     * Gère la gestion du menu buffet.
+     */
     private void gererMenuBuffet() {
         // effacer l'écran
         System.out.print("\033[H\033[2J");
@@ -543,6 +618,9 @@ public class ControleurAdmin extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Affiche la liste complète des plats disponibles.
+     */
     private void afficherTousLesPlats() {
         // Affichage des menus disponibles
         List<Menu> menus = GalileeEats.getMenusDisponibles();
@@ -555,6 +633,11 @@ public class ControleurAdmin extends AbstractControleur {
         vue.afficher();
     }
 
+    /**
+     * Recherche un plat par son nom.
+     * @param nom Nom du plat recherché.
+     * @return L'objet représentant le plat trouvé, ou null si inexistant.
+     */
     private MenuComponent trouverPlatParNom(String nom) {
         for (List<MenuComponent> platsList : menus.values()) {
             for (MenuComponent plat : platsList) {
@@ -566,12 +649,21 @@ public class ControleurAdmin extends AbstractControleur {
         return null;
     }
 
+    /**
+     * Demande une confirmation à l'utilisateur (oui/non).
+     * @param message Message affiché à l'utilisateur.
+     * @return true si l'utilisateur confirme, false sinon.
+     */
     private boolean confirmerAction(String message) {
         Scanner scanner = new Scanner(System.in);
         System.out.print(message + " (oui/non) : ");
         return scanner.nextLine().equalsIgnoreCase("oui");
     }
 
+    /**
+     * Génère un identifiant unique pour un nouvel utilisateur.
+     * @return Une chaîne représentant l'identifiant généré.
+     */
     private String generateId() {
         return String.format("%04d", (int)(Math.random() * 10000));
     }
